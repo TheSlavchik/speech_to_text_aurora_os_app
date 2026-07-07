@@ -30,14 +30,14 @@
     <message>
         <location filename="../qml/pages/AboutPage.qml" line="45"/>
         <source>#licenseText</source>
-        <translation>&lt;p&gt;&lt;i&gt;Copyright&nbsp;© 2026 Omsk State Technical University (Chair of Applied Mathematics and Computer Science).&lt;/i&gt;&lt;/p&gt;
+        <translation>&lt;p&gt;&lt;i&gt;Copyright © 2026 Omsk State Technical University (Chair of Applied Mathematics and Computer Science).&lt;/i&gt;&lt;/p&gt;
         &lt;p&gt;Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:&lt;/p&gt;
         &lt;ol&gt;
-        	&lt;li&gt;Redistributions of&nbsp;source code must retain the above copyright notice, this list of&nbsp;conditions and the following disclaimer.&lt;/li&gt;
-        	&lt;li&gt;Redistributions in&nbsp;binary form must reproduce the above copyright notice, this list of&nbsp;conditions and the following disclaimer in&nbsp;the documentation and/or other materials provided with the distribution.&lt;/li&gt;
-        	&lt;li&gt;Neither the name of&nbsp;the copyright holder nor the names of&nbsp;its contributors may be&nbsp;used to&nbsp;endorse or&nbsp;promote products derived from this software without specific prior written permission.&lt;/li&gt;
+        	&lt;li&gt;Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.&lt;/li&gt;
+        	&lt;li&gt;Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.&lt;/li&gt;
+        	&lt;li&gt;Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.&lt;/li&gt;
         &lt;/ol&gt;
-        &lt;p&gt;THIS SOFTWARE IS&nbsp;PROVIDED BY&nbsp;THE&nbsp;COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS&nbsp;IS&quot; AND ANY EXPRESS OR&nbsp;IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE&nbsp;IMPLIED WARRANTIES OF&nbsp;MERCHANTABILITY AND FITNESS FOR A&nbsp;PARTICULAR PURPOSE ARE DISCLAIMED. IN&nbsp;NO&nbsp;EVENT SHALL THE&nbsp;COPYRIGHT HOLDER OR&nbsp;CONTRIBUTORS BE&nbsp;LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR&nbsp;CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF&nbsp;SUBSTITUTE GOODS OR&nbsp;SERVICES; LOSS OF&nbsp;USE, DATA, OR&nbsp;PROFITS; OR&nbsp;BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON&nbsp;ANY THEORY OF&nbsp;LIABILITY, WHETHER IN&nbsp;CONTRACT, STRICT LIABILITY, OR&nbsp;TORT (INCLUDING NEGLIGENCE OR&nbsp;OTHERWISE) ARISING IN&nbsp;ANY WAY OUT OF THE&nbsp;USE OF&nbsp;THIS SOFTWARE, EVEN IF&nbsp;ADVISED OF&nbsp;THE&nbsp;POSSIBILITY OF&nbsp;SUCH DAMAGE.&lt;/p&gt;</translation>
+        &lt;p&gt;THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.&lt;/p&gt;</translation>
     </message>
 </context>
 <context>

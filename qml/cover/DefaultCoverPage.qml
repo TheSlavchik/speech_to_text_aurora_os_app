@@ -6,8 +6,6 @@ CoverBackground {
     id: cover
     objectName: "defaultCover"
 
-    property bool isRecording: false
-    property string recordDuration: "00:00"
     property string notesCount: "0"
 
     function refreshCount() {
@@ -22,34 +20,31 @@ CoverBackground {
         }
     }
 
-    CoverTemplate {
-        objectName: "applicationCover"
-        primaryText: isRecording ? qsTr("Идёт запись...") : qsTr("STT")
-        secondaryText: isRecording ? recordDuration :
-                        qsTr("Заметок: %1").arg(notesCount)
-        icon {
-            source: Qt.resolvedUrl("../icons/STT.svg")
-            sourceSize { width: icon.width; height: icon.height }
+    Column {
+        anchors.centerIn: parent
+        spacing: Theme.paddingSmall
+
+        // Recording indicator
+        Label {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: globalRecognizer.recording ? qsTr("Идёт запись...") : qsTr("Заметок: %1").arg(notesCount)
+            color: globalRecognizer.recording ? Theme.errorColor : Theme.primaryColor
+            font.pixelSize: Theme.fontSizeMedium
+        }
+
+        Label {
+            anchors.horizontalCenter: parent.horizontalCenter
+            text: formatTime(globalRecognizer.durationSec)
+            color: Theme.secondaryColor
+            font.pixelSize: Theme.fontSizeSmall
+            visible: globalRecognizer.recording
         }
     }
 
-    // Recording indicator on cover
-    Rectangle {
-        anchors {
-            bottom: parent.bottom
-            horizontalCenter: parent.horizontalCenter
-            bottomMargin: Theme.paddingLarge
-        }
-        width: parent.width * 0.6
-        height: Theme.paddingSmall
-        radius: height / 2
-        visible: isRecording
-        color: Theme.errorColor
-
-        SequentialAnimation on opacity {
-            loops: Animation.Infinite
-            PropertyAnimation { to: 0.4; duration: 800 }
-            PropertyAnimation { to: 1.0; duration: 800 }
-        }
+    function formatTime(seconds) {
+        var s = Math.floor(seconds)
+        var min = Math.floor(s / 60)
+        var sec = s % 60
+        return (min < 10 ? "0" : "") + min + ":" + (sec < 10 ? "0" : "") + sec
     }
 }

@@ -18,9 +18,9 @@ Page {
         return (min < 10 ? "0" : "") + min + ":" + (sec < 10 ? "0" : "") + sec
     }
 
-    // Offline speech recognition backed by the bundled Vosk model.
-    SpeechRecognizer {
-        id: recognizer
+    // Offline speech recognition — uses the global instance from STT.qml.
+    Connections {
+        target: globalRecognizer
 
         onFinished: {
             var clean = text ? text.trim() : ""
@@ -53,9 +53,6 @@ Page {
         }
     }
 
-    // Load the model once when the page is first shown.
-    Component.onCompleted: recognizer.init()
-
     SilicaFlickable {
         anchors.fill: parent
         contentHeight: column.height
@@ -65,9 +62,9 @@ Page {
             width: parent.width
 
             PageHeader {
-                title: recognizer.recording ? qsTr("Запись") :
-                       recognizer.finalizing ? qsTr("Расшифровка") :
-                       recognizer.loading ? qsTr("Загрузка модели") :
+                title: globalRecognizer.recording ? qsTr("Запись") :
+                       globalRecognizer.finalizing ? qsTr("Расшифровка") :
+                       globalRecognizer.loading ? qsTr("Загрузка модели") :
                        qsTr("Готов к записи")
             }
 
@@ -75,11 +72,11 @@ Page {
             Item {
                 width: parent.width
                 height: Theme.itemSizeExtraLarge
-                visible: recognizer.loading
+                visible: globalRecognizer.loading
 
                 BusyIndicator {
                     anchors.centerIn: parent
-                    running: recognizer.loading
+                    running: globalRecognizer.loading
                     size: BusyIndicatorSize.Medium
                 }
             }
@@ -89,7 +86,7 @@ Page {
                 id: signalLevelContainer
                 width: parent.width
                 height: Theme.itemSizeExtraLarge * 2
-                visible: recognizer.recording
+                visible: globalRecognizer.recording
 
                 Rectangle {
                     anchors.centerIn: parent
@@ -103,11 +100,11 @@ Page {
 
                 Rectangle {
                     anchors.centerIn: parent
-                    width: Theme.itemSizeMedium + recognizer.level * Theme.itemSizeLarge
-                    height: Theme.itemSizeMedium + recognizer.level * Theme.itemSizeLarge
+                    width: Theme.itemSizeMedium + globalRecognizer.level * Theme.itemSizeLarge
+                    height: Theme.itemSizeMedium + globalRecognizer.level * Theme.itemSizeLarge
                     radius: width / 2
-                    color: recognizer.level < 0.7 ? Theme.highlightColor : Theme.errorColor
-                    opacity: 0.3 + recognizer.level * 0.5
+                    color: globalRecognizer.level < 0.7 ? Theme.highlightColor : Theme.errorColor
+                    opacity: 0.3 + globalRecognizer.level * 0.5
                 }
 
                 Label {
@@ -122,11 +119,11 @@ Page {
             // Duration display.
             Label {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: formatTime(recognizer.durationSec)
-                color: recognizer.recording ? Theme.errorColor : Theme.primaryColor
+                text: formatTime(globalRecognizer.durationSec)
+                color: globalRecognizer.recording ? Theme.errorColor : Theme.primaryColor
                 font.pixelSize: Theme.fontSizeExtraLarge
                 font.weight: Font.Light
-                visible: recognizer.recording || recognizer.durationSec > 0
+                visible: globalRecognizer.recording || globalRecognizer.durationSec > 0
             }
 
             Item { width: 1; height: Theme.paddingLarge }
@@ -136,7 +133,7 @@ Page {
                 width: parent.width - 2 * Theme.horizontalPageMargin
                 anchors.horizontalCenter: parent.horizontalCenter
                 height: liveColumn.height
-                visible: recognizer.recording || recognizer.finalizing
+                visible: globalRecognizer.recording || globalRecognizer.finalizing
 
                 Column {
                     id: liveColumn
@@ -144,7 +141,7 @@ Page {
 
                     Label {
                         width: parent.width
-                        text: recognizer.finalizing ? qsTr("Завершаем расшифровку...")
+                        text: globalRecognizer.finalizing ? qsTr("Завершаем расшифровку...")
                                                     : qsTr("Распознавание речи...")
                         color: Theme.secondaryColor
                         font.pixelSize: Theme.fontSizeSmall
@@ -156,7 +153,7 @@ Page {
                     ProgressBar {
                         width: parent.width
                         indeterminate: true
-                        visible: recognizer.finalizing
+                        visible: globalRecognizer.finalizing
                     }
 
                     Item { width: 1; height: Theme.paddingSmall }
@@ -164,8 +161,8 @@ Page {
                     Label {
                         width: parent.width
                         text: {
-                            var acc = recognizer.fullText
-                            var part = recognizer.partialText
+                            var acc = globalRecognizer.fullText
+                            var part = globalRecognizer.partialText
                             if (part.length > 0)
                                 return (acc.length > 0 ? acc + " " : "") + part
                             return acc
@@ -182,7 +179,7 @@ Page {
                     Button {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: qsTr("Отменить")
-                        onClicked: recognizer.cancel()
+                        onClicked: globalRecognizer.cancel()
                     }
                 }
             }
@@ -195,24 +192,24 @@ Page {
                 width: Theme.itemSizeExtraLarge * 1.2
                 height: Theme.itemSizeExtraLarge * 1.2
                 radius: width / 2
-                color: recognizer.recording ? Theme.errorColor : Theme.highlightColor
-                opacity: (recognizer.modelReady && !recognizer.finalizing) ? 1.0 : 0.4
-                visible: !recognizer.finalizing
+                color: globalRecognizer.recording ? Theme.errorColor : Theme.highlightColor
+                opacity: (globalRecognizer.modelReady && !globalRecognizer.finalizing) ? 1.0 : 0.4
+                visible: !globalRecognizer.finalizing
 
                 IconButton {
                     anchors.centerIn: parent
-                    icon.source: recognizer.recording ? "image://theme/icon-m-stop"
+                    icon.source: globalRecognizer.recording ? "image://theme/icon-m-stop"
                                                        : "image://theme/icon-m-mic"
                     icon.width: Theme.iconSizeLarge
                     icon.height: Theme.iconSizeLarge
                     width: parent.width
                     height: parent.height
-                    enabled: recognizer.modelReady && !recognizer.finalizing
+                    enabled: globalRecognizer.modelReady && !globalRecognizer.finalizing
                     onClicked: {
-                        if (recognizer.recording) {
-                            recognizer.stop()
+                        if (globalRecognizer.recording) {
+                            globalRecognizer.stop()
                         } else {
-                            recognizer.start()
+                            globalRecognizer.start()
                         }
                     }
                 }
@@ -224,10 +221,10 @@ Page {
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: parent.width - 2 * Theme.horizontalPageMargin
                 text: {
-                    if (recognizer.loading) return qsTr("Загрузка модели распознавания...")
-                    if (!recognizer.modelReady) return qsTr("Модель распознавания недоступна")
-                    if (recognizer.recording) return qsTr("Нажмите стоп, чтобы завершить запись")
-                    if (recognizer.finalizing) return qsTr("Ожидайте завершения расшифровки")
+                    if (globalRecognizer.loading) return qsTr("Загрузка модели распознавания...")
+                    if (!globalRecognizer.modelReady) return qsTr("Модель распознавания недоступна")
+                    if (globalRecognizer.recording) return qsTr("Нажмите стоп, чтобы завершить запись")
+                    if (globalRecognizer.finalizing) return qsTr("Ожидайте завершения расшифровки")
                     return qsTr("Нажмите на микрофон, чтобы начать запись")
                 }
                 color: Theme.secondaryColor

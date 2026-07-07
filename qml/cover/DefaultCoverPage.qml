@@ -26,30 +26,62 @@ CoverBackground {
         onFinished: refreshCount()
     }
 
-    Column {
-        anchors.centerIn: parent
-        spacing: Theme.paddingSmall
-
-        Label {
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: {
-                if (SpeechRecognizer.paused)
-                    return qsTr("Пауза")
-                if (SpeechRecognizer.recording)
-                    return qsTr("Идёт запись...")
-                return qsTr("Заметок: %1").arg(notesCount)
-            }
-            color: (SpeechRecognizer.recording && !SpeechRecognizer.paused)
-                   ? Theme.errorColor : Theme.primaryColor
-            font.pixelSize: Theme.fontSizeMedium
+    // Reserve space above the CoverActionList by applying a bottom margin.
+    Item {
+        anchors {
+            fill: parent
+            bottomMargin: SpeechRecognizer.recording ? Theme._coverActionsAreaHorizontalHeight : 0
         }
 
-        Label {
-            anchors.horizontalCenter: parent.horizontalCenter
-            text: formatTime(SpeechRecognizer.durationSec)
-            color: Theme.secondaryColor
-            font.pixelSize: Theme.fontSizeSmall
-            visible: SpeechRecognizer.recording
+        Column {
+            anchors.centerIn: parent
+            spacing: Theme.paddingSmall
+
+            Label {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: {
+                    if (SpeechRecognizer.paused)
+                        return qsTr("Пауза")
+                    if (SpeechRecognizer.recording)
+                        return qsTr("Идёт запись...")
+                    return qsTr("Заметок: %1").arg(notesCount)
+                }
+                color: (SpeechRecognizer.recording && !SpeechRecognizer.paused)
+                       ? Theme.errorColor : Theme.primaryColor
+                font.pixelSize: Theme.fontSizeMedium
+            }
+
+            Label {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: formatTime(SpeechRecognizer.durationSec)
+                color: Theme.secondaryColor
+                font.pixelSize: Theme.fontSizeSmall
+                visible: SpeechRecognizer.recording
+            }
+        }
+    }
+
+    CoverActionList {
+        enabled: SpeechRecognizer.recording
+
+        CoverAction {
+            iconSource: "image://theme/icon-m-cancel"
+            onTriggered: SpeechRecognizer.cancel()
+        }
+        CoverAction {
+            iconSource: SpeechRecognizer.paused ? "image://theme/icon-m-play"
+                                                : "image://theme/icon-m-pause"
+            onTriggered: {
+                if (SpeechRecognizer.paused) {
+                    SpeechRecognizer.resume()
+                } else {
+                    SpeechRecognizer.pause()
+                }
+            }
+        }
+        CoverAction {
+            iconSource: "image://theme/icon-m-stop"
+            onTriggered: SpeechRecognizer.stop()
         }
     }
 

@@ -11,7 +11,16 @@
     <message>
         <location filename="../qml/pages/AboutPage.qml" line="30"/>
         <source>#descriptionText</source>
-        <translation>&lt;p&gt;Короткое описание моего приложения для ОС Аврора&lt;/p&gt;</translation>
+        <translation>&lt;p&gt;SpeechToText — an offline voice recorder with on-device speech-to-text transcription, developed in C++/Qt (Sailfish Silica) for running on Aurora OS.&lt;/p&gt;
+&lt;p&gt;Key features:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Microphone recording with start/stop, duration and signal level indication&lt;/li&gt;
+&lt;li&gt;Background on-device transcription with progress indication and cancellation&lt;/li&gt;
+&lt;li&gt;Notes (title + date + audio file + text) stored in the application data directory&lt;/li&gt;
+&lt;li&gt;Note viewing with audio playback&lt;/li&gt;
+&lt;li&gt;Full-text search through the transcripts&lt;/li&gt;
+&lt;li&gt;Text export to a file or to the clipboard&lt;/li&gt;
+&lt;/ul&gt;</translation>
     </message>
     <message>
         <location filename="../qml/pages/AboutPage.qml" line="35"/>
@@ -21,7 +30,7 @@
     <message>
         <location filename="../qml/pages/AboutPage.qml" line="45"/>
         <source>#licenseText</source>
-        <translation>&lt;p&gt;&lt;i&gt;Copyright (C)2025 ru.template&lt;/i&gt;&lt;/p&gt;
+        <translation>&lt;p&gt;&lt;i&gt;Copyright © 2026 Omsk State Technical University (Chair of Applied Mathematics and Computer Science).&lt;/i&gt;&lt;/p&gt;
 &lt;p&gt;Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:&lt;/p&gt;
 &lt;ol&gt;
 	&lt;li&gt;Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.&lt;/li&gt;
@@ -34,18 +43,13 @@
 <context>
     <name>DefaultCoverPage</name>
     <message>
-        <location filename="../qml/cover/DefaultCoverPage.qml" line="27"/>
-        <source>STT</source>
-        <translation>STT</translation>
-    </message>
-    <message>
-        <location filename="../qml/cover/DefaultCoverPage.qml" line="27"/>
-        <source>Идёт запись...</source>
+        <location filename="../qml/cover/DefaultCoverPage.qml" line="30"/>
+        <source>Заметок: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/cover/DefaultCoverPage.qml" line="29"/>
-        <source>Заметок: %1</source>
+        <location filename="../qml/cover/DefaultCoverPage.qml" line="30"/>
+        <source>Идёт запись...</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -180,67 +184,67 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="68"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="65"/>
         <source>Запись</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="69"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="66"/>
         <source>Расшифровка</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="70"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="67"/>
         <source>Загрузка модели</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="71"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="68"/>
         <source>Готов к записи</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="115"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="112"/>
         <source>MIC</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="147"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="144"/>
         <source>Завершаем расшифровку...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="148"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="145"/>
         <source>Распознавание речи...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="184"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="181"/>
         <source>Отменить</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="227"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="224"/>
         <source>Загрузка модели распознавания...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="228"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="225"/>
         <source>Модель распознавания недоступна</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="229"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="226"/>
         <source>Нажмите стоп, чтобы завершить запись</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="230"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="227"/>
         <source>Ожидайте завершения расшифровки</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="231"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="228"/>
         <source>Нажмите на микрофон, чтобы начать запись</source>
         <translation type="unfinished"></translation>
     </message>

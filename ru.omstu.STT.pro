@@ -1,0 +1,63 @@
+TARGET = ru.omstu.STT
+
+CONFIG += \
+    auroraapp \
+    c++11
+
+QT += multimedia qml quick
+
+PKGCONFIG += \
+
+SOURCES += \
+    src/main.cpp \
+    src/speechrecognizer.cpp \
+    src/voskworker.cpp \
+
+HEADERS += \
+    src/speechrecognizer.h \
+    src/voskworker.h \
+
+# Vosk offline speech recognition (native library based on Kaldi).
+# Place the Aurora aarch64 build of libvosk.so into vosk/lib/ before building.
+INCLUDEPATH += $$PWD/vosk
+LIBS += -L$$PWD/vosk/lib -lvosk
+QMAKE_RPATHDIR += /usr/share/$${TARGET}/lib
+
+# Ship libvosk.so with the package.
+vosklib.files = vosk/lib/libvosk.so
+vosklib.path = /usr/share/$${TARGET}/lib
+INSTALLS += vosklib
+
+# libatomic.so.1 is a runtime dependency of libvosk that is not present on the
+# Aurora device/emulator. If you drop it into vosk/lib/, it gets bundled and the
+# executable is forced to load it from our lib dir (via rpath), which also
+# satisfies libvosk's own dependency on it.
+exists($$PWD/vosk/lib/libatomic.so.1) {
+    voskatomic.files = vosk/lib/libatomic.so.1
+    voskatomic.path = /usr/share/$${TARGET}/lib
+    INSTALLS += voskatomic
+    QMAKE_LFLAGS += -L$$PWD/vosk/lib -Wl,--no-as-needed,-l:libatomic.so.1 -Wl,--as-needed
+}
+
+# Ship the Vosk model directory (unpack the model into models/ first).
+voskmodel.files = models/vosk-model-small-ru-0.22
+voskmodel.path = /usr/share/$${TARGET}/models
+INSTALLS += voskmodel
+
+DISTFILES += \
+    rpm/ru.omstu.STT.spec \
+    qml/STT.qml \
+    qml/Database.js \
+    qml/cover/DefaultCoverPage.qml \
+    qml/pages/MainPage.qml \
+    qml/pages/AboutPage.qml \
+    qml/pages/RecordingPage.qml \
+    qml/pages/NoteViewPage.qml \
+
+AURORAAPP_ICONS = 86x86 108x108 128x128 172x172
+
+CONFIG += auroraapp_i18n
+
+TRANSLATIONS += \
+    translations/ru.omstu.STT.ts \
+    translations/ru.omstu.STT-ru.ts \

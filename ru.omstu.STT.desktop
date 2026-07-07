@@ -1,0 +1,18 @@
+[Desktop Entry]
+Type=Application
+X-Nemo-Application-Type=silica-qt5
+Icon=ru.omstu.STT
+Exec=/usr/bin/ru.omstu.STT
+Name=SpeechToText
+Name[ru]=SpeechToText
+
+[X-Sailjail]
+Sandboxing=Disabled
+OrganizationName=ru.omstu
+ApplicationName=STT
+
+[X-Application]
+Permissions=Audio;Microphone;UserDirs
+OrganizationName=ru.omstu
+ApplicationName=STT
+ExecDBus=/usr/bin/ru.omstu.STT

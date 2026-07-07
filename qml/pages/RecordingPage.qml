@@ -123,7 +123,7 @@ Page {
                 color: globalRecognizer.recording ? Theme.errorColor : Theme.primaryColor
                 font.pixelSize: Theme.fontSizeExtraLarge
                 font.weight: Font.Light
-                visible: globalRecognizer.recording || globalRecognizer.durationSec > 0
+                visible: globalRecognizer.recording
             }
 
             Item { width: 1; height: Theme.paddingLarge }

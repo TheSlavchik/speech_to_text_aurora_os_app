@@ -29,8 +29,9 @@ SpeechRecognizer::SpeechRecognizer(QObject *parent)
     , m_modelReady(false)
     , m_loading(false)
     , m_recording(false)
-    , m_finalizing(false)
-    , m_level(0.0)
+        , m_finalizing(false)
+        , m_paused(false)
+        , m_level(0.0)
     , m_durationSec(0)
     , m_cancelled(false)
     , m_audioInput(nullptr)
@@ -284,7 +285,8 @@ void SpeechRecognizer::stop()
         return;
     }
     m_noAudioTimer.stop();
-    // Grab any bytes still buffered before tearing the input down.
+        setPaused(false);
+        // Grab any bytes still buffered before tearing the input down.
     if (m_audioIo) {
         const QByteArray tail = m_audioIo->readAll();
         if (!tail.isEmpty()) {
@@ -307,6 +309,7 @@ void SpeechRecognizer::cancel()
     }
     m_cancelled = true;
     m_noAudioTimer.stop();
+    setPaused(false);
     teardownAudio();
     setRecording(false);
     setLevel(0.0);
@@ -320,6 +323,53 @@ void SpeechRecognizer::cancel()
     }
     setFinalizing(true);
     emit requestFinalize();
+}
+
+void SpeechRecognizer::pause()
+{
+    if (!m_recording || m_paused)
+        return;
+
+    teardownAudio();
+    setPaused(true);
+}
+
+void SpeechRecognizer::resume()
+{
+    if (!m_recording || !m_paused)
+        return;
+
+    QAudioFormat fmt;
+    fmt.setSampleRate(m_sampleRate);
+    fmt.setChannelCount(1);
+    fmt.setSampleSize(16);
+    fmt.setCodec("audio/pcm");
+    fmt.setByteOrder(QAudioFormat::LittleEndian);
+    fmt.setSampleType(QAudioFormat::SignedInt);
+
+    QAudioDeviceInfo info = QAudioDeviceInfo::defaultInputDevice();
+    if (!info.isFormatSupported(fmt)) {
+        emit errorOccurred(tr("Микрофон недоступен"));
+        return;
+    }
+
+    m_audioInput = new QAudioInput(info, fmt);
+    m_audioIo = m_audioInput->start();
+    if (!m_audioIo) {
+        emit errorOccurred(tr("Не удалось начать запись с микрофона"));
+        return;
+    }
+
+    connect(m_audioIo, &QIODevice::readyRead, this, &SpeechRecognizer::onAudioDataReady);
+    setPaused(false);
+}
+
+void SpeechRecognizer::setPaused(bool v)
+{
+    if (m_paused != v) {
+        m_paused = v;
+        emit pausedChanged();
+    }
 }
 
 void SpeechRecognizer::teardownAudio()

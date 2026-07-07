@@ -20,7 +20,7 @@ Page {
 
     // Offline speech recognition — uses the global instance from STT.qml.
     Connections {
-        target: globalRecognizer
+        target: SpeechRecognizer
 
         onFinished: {
             var clean = text ? text.trim() : ""
@@ -62,9 +62,9 @@ Page {
             width: parent.width
 
             PageHeader {
-                title: globalRecognizer.recording ? qsTr("Запись") :
-                       globalRecognizer.finalizing ? qsTr("Расшифровка") :
-                       globalRecognizer.loading ? qsTr("Загрузка модели") :
+                title: SpeechRecognizer.recording ? qsTr("Запись") :
+                       SpeechRecognizer.finalizing ? qsTr("Расшифровка") :
+                       SpeechRecognizer.loading ? qsTr("Загрузка модели") :
                        qsTr("Готов к записи")
             }
 
@@ -72,11 +72,11 @@ Page {
             Item {
                 width: parent.width
                 height: Theme.itemSizeExtraLarge
-                visible: globalRecognizer.loading
+                visible: SpeechRecognizer.loading
 
                 BusyIndicator {
                     anchors.centerIn: parent
-                    running: globalRecognizer.loading
+                    running: SpeechRecognizer.loading
                     size: BusyIndicatorSize.Medium
                 }
             }
@@ -86,7 +86,7 @@ Page {
                 id: signalLevelContainer
                 width: parent.width
                 height: Theme.itemSizeExtraLarge * 2
-                visible: globalRecognizer.recording
+                visible: SpeechRecognizer.recording
 
                 Rectangle {
                     anchors.centerIn: parent
@@ -100,11 +100,11 @@ Page {
 
                 Rectangle {
                     anchors.centerIn: parent
-                    width: Theme.itemSizeMedium + globalRecognizer.level * Theme.itemSizeLarge
-                    height: Theme.itemSizeMedium + globalRecognizer.level * Theme.itemSizeLarge
+                    width: Theme.itemSizeMedium + SpeechRecognizer.level * Theme.itemSizeLarge
+                    height: Theme.itemSizeMedium + SpeechRecognizer.level * Theme.itemSizeLarge
                     radius: width / 2
-                    color: globalRecognizer.level < 0.7 ? Theme.highlightColor : Theme.errorColor
-                    opacity: 0.3 + globalRecognizer.level * 0.5
+                    color: SpeechRecognizer.level < 0.7 ? Theme.highlightColor : Theme.errorColor
+                    opacity: 0.3 + SpeechRecognizer.level * 0.5
                 }
 
                 Label {
@@ -119,11 +119,11 @@ Page {
             // Duration display.
             Label {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: formatTime(globalRecognizer.durationSec)
-                color: globalRecognizer.recording ? Theme.errorColor : Theme.primaryColor
+                text: formatTime(SpeechRecognizer.durationSec)
+                color: SpeechRecognizer.recording ? Theme.errorColor : Theme.primaryColor
                 font.pixelSize: Theme.fontSizeExtraLarge
                 font.weight: Font.Light
-                visible: globalRecognizer.recording
+                visible: SpeechRecognizer.recording
             }
 
             Item { width: 1; height: Theme.paddingLarge }
@@ -133,7 +133,7 @@ Page {
                 width: parent.width - 2 * Theme.horizontalPageMargin
                 anchors.horizontalCenter: parent.horizontalCenter
                 height: liveColumn.height
-                visible: globalRecognizer.recording || globalRecognizer.finalizing
+                visible: SpeechRecognizer.recording || SpeechRecognizer.finalizing
 
                 Column {
                     id: liveColumn
@@ -141,7 +141,7 @@ Page {
 
                     Label {
                         width: parent.width
-                        text: globalRecognizer.finalizing ? qsTr("Завершаем расшифровку...")
+                        text: SpeechRecognizer.finalizing ? qsTr("Завершаем расшифровку...")
                                                     : qsTr("Распознавание речи...")
                         color: Theme.secondaryColor
                         font.pixelSize: Theme.fontSizeSmall
@@ -153,7 +153,7 @@ Page {
                     ProgressBar {
                         width: parent.width
                         indeterminate: true
-                        visible: globalRecognizer.finalizing
+                        visible: SpeechRecognizer.finalizing
                     }
 
                     Item { width: 1; height: Theme.paddingSmall }
@@ -161,8 +161,8 @@ Page {
                     Label {
                         width: parent.width
                         text: {
-                            var acc = globalRecognizer.fullText
-                            var part = globalRecognizer.partialText
+                            var acc = SpeechRecognizer.fullText
+                            var part = SpeechRecognizer.partialText
                             if (part.length > 0)
                                 return (acc.length > 0 ? acc + " " : "") + part
                             return acc
@@ -174,42 +174,85 @@ Page {
                         visible: text.length > 0
                     }
 
-                    Item { width: 1; height: Theme.paddingMedium }
 
-                    Button {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: qsTr("Отменить")
-                        onClicked: globalRecognizer.cancel()
-                    }
                 }
             }
 
             Item { width: 1; height: Theme.paddingLarge }
 
-            // Record / Stop button.
-            Rectangle {
+            // Control buttons row: Отмена | Пауза | Запись/Стоп
+            Row {
                 anchors.horizontalCenter: parent.horizontalCenter
-                width: Theme.itemSizeExtraLarge * 1.2
-                height: Theme.itemSizeExtraLarge * 1.2
-                radius: width / 2
-                color: globalRecognizer.recording ? Theme.errorColor : Theme.highlightColor
-                opacity: (globalRecognizer.modelReady && !globalRecognizer.finalizing) ? 1.0 : 0.4
-                visible: !globalRecognizer.finalizing
+                spacing: Theme.paddingLarge
 
-                IconButton {
-                    anchors.centerIn: parent
-                    icon.source: globalRecognizer.recording ? "image://theme/icon-m-stop"
-                                                       : "image://theme/icon-m-mic"
-                    icon.width: Theme.iconSizeLarge
-                    icon.height: Theme.iconSizeLarge
-                    width: parent.width
-                    height: parent.height
-                    enabled: globalRecognizer.modelReady && !globalRecognizer.finalizing
-                    onClicked: {
-                        if (globalRecognizer.recording) {
-                            globalRecognizer.stop()
-                        } else {
-                            globalRecognizer.start()
+                Rectangle {
+                    width: Theme.itemSizeExtraLarge * 1.2
+                    height: Theme.itemSizeExtraLarge * 1.2
+                    radius: width / 2
+                    color: Qt.rgba(Theme.errorColor.r, Theme.errorColor.g, Theme.errorColor.b, 0.8)
+                    visible: SpeechRecognizer.recording || SpeechRecognizer.finalizing
+
+                    IconButton {
+                        anchors.centerIn: parent
+                        icon.source: "image://theme/icon-m-cancel"
+                        icon.width: Theme.iconSizeLarge
+                        icon.height: Theme.iconSizeLarge
+                        width: parent.width
+                        height: parent.height
+                        onClicked: SpeechRecognizer.cancel()
+                    }
+                }
+
+                Rectangle {
+                    width: Theme.itemSizeExtraLarge * 1.2
+                    height: Theme.itemSizeExtraLarge * 1.2
+                    radius: width / 2
+                    color: Theme.highlightColor
+                    opacity: (SpeechRecognizer.recording && !SpeechRecognizer.finalizing) ? 0.7 : 0.3
+                    visible: SpeechRecognizer.recording
+
+                    IconButton {
+                        anchors.centerIn: parent
+                        icon.source: SpeechRecognizer.paused ? "image://theme/icon-m-play"
+                                                             : "image://theme/icon-m-pause"
+                        icon.width: Theme.iconSizeLarge
+                        icon.height: Theme.iconSizeLarge
+                        width: parent.width
+                        height: parent.height
+                        enabled: SpeechRecognizer.recording && !SpeechRecognizer.finalizing
+                        onClicked: {
+                            if (SpeechRecognizer.paused) {
+                                SpeechRecognizer.resume()
+                            } else {
+                                SpeechRecognizer.pause()
+                            }
+                        }
+                    }
+                }
+
+                Rectangle {
+                    width: Theme.itemSizeExtraLarge * 1.2
+                    height: Theme.itemSizeExtraLarge * 1.2
+                    radius: width / 2
+                    color: SpeechRecognizer.recording ? Theme.errorColor : Theme.highlightColor
+                    opacity: (SpeechRecognizer.modelReady && !SpeechRecognizer.finalizing) ? 1.0 : 0.4
+                    visible: !SpeechRecognizer.finalizing
+
+                    IconButton {
+                        anchors.centerIn: parent
+                        icon.source: SpeechRecognizer.recording ? "image://theme/icon-m-stop"
+                                                           : "image://theme/icon-m-mic"
+                        icon.width: Theme.iconSizeLarge
+                        icon.height: Theme.iconSizeLarge
+                        width: parent.width
+                        height: parent.height
+                        enabled: SpeechRecognizer.modelReady && !SpeechRecognizer.finalizing
+                        onClicked: {
+                            if (SpeechRecognizer.recording) {
+                                SpeechRecognizer.stop()
+                            } else {
+                                SpeechRecognizer.start()
+                            }
                         }
                     }
                 }
@@ -221,10 +264,10 @@ Page {
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: parent.width - 2 * Theme.horizontalPageMargin
                 text: {
-                    if (globalRecognizer.loading) return qsTr("Загрузка модели распознавания...")
-                    if (!globalRecognizer.modelReady) return qsTr("Модель распознавания недоступна")
-                    if (globalRecognizer.recording) return qsTr("Нажмите стоп, чтобы завершить запись")
-                    if (globalRecognizer.finalizing) return qsTr("Ожидайте завершения расшифровки")
+                    if (SpeechRecognizer.loading) return qsTr("Загрузка модели распознавания...")
+                    if (!SpeechRecognizer.modelReady) return qsTr("Модель распознавания недоступна")
+                    if (SpeechRecognizer.recording) return qsTr("Нажмите стоп, чтобы завершить запись")
+                    if (SpeechRecognizer.finalizing) return qsTr("Ожидайте завершения расшифровки")
                     return qsTr("Нажмите на микрофон, чтобы начать запись")
                 }
                 color: Theme.secondaryColor

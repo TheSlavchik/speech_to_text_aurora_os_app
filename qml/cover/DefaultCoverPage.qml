@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import ru.omstu.STT 1.0
 import "../Database.js" as Db
 
 CoverBackground {
@@ -20,24 +21,35 @@ CoverBackground {
         }
     }
 
+    Connections {
+        target: SpeechRecognizer
+        onFinished: refreshCount()
+    }
+
     Column {
         anchors.centerIn: parent
         spacing: Theme.paddingSmall
 
-        // Recording indicator
         Label {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: globalRecognizer.recording ? qsTr("Идёт запись...") : qsTr("Заметок: %1").arg(notesCount)
-            color: globalRecognizer.recording ? Theme.errorColor : Theme.primaryColor
+            text: {
+                if (SpeechRecognizer.paused)
+                    return qsTr("Пауза")
+                if (SpeechRecognizer.recording)
+                    return qsTr("Идёт запись...")
+                return qsTr("Заметок: %1").arg(notesCount)
+            }
+            color: (SpeechRecognizer.recording && !SpeechRecognizer.paused)
+                   ? Theme.errorColor : Theme.primaryColor
             font.pixelSize: Theme.fontSizeMedium
         }
 
         Label {
             anchors.horizontalCenter: parent.horizontalCenter
-            text: formatTime(globalRecognizer.durationSec)
+            text: formatTime(SpeechRecognizer.durationSec)
             color: Theme.secondaryColor
             font.pixelSize: Theme.fontSizeSmall
-            visible: globalRecognizer.recording
+            visible: SpeechRecognizer.recording
         }
     }
 

@@ -17,10 +17,6 @@ Page {
     property string noteDuration: ""
     property string noteAudio: ""
 
-    // Lightweight instance used only for file export (model is never loaded).
-    SpeechRecognizer {
-        id: fileExporter
-    }
 
     function formatTime(seconds) {
         var s = Math.floor(seconds)
@@ -46,7 +42,7 @@ Page {
             var fullPath = path + "/" + fileName
             var content = noteTitle + "\n" + noteDate + "\n\n" + noteText
 
-            var ok = fileExporter.saveTextToFile("file://" + fullPath, content)
+            var ok = SpeechRecognizer.saveTextToFile("file://" + fullPath, content)
             if (ok) {
                 notificationPanel.previewBody = qsTr("Текст сохранён: %1").arg(fullPath)
             } else {

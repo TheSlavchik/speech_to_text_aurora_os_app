@@ -28,7 +28,8 @@ class SpeechRecognizer : public QObject
     Q_PROPERTY(bool loading READ loading NOTIFY loadingChanged)
     Q_PROPERTY(bool recording READ recording NOTIFY recordingChanged)
     Q_PROPERTY(bool finalizing READ finalizing NOTIFY finalizingChanged)
-    Q_PROPERTY(qreal level READ level NOTIFY levelChanged)
+        Q_PROPERTY(bool paused READ paused NOTIFY pausedChanged)
+        Q_PROPERTY(qreal level READ level NOTIFY levelChanged)
     Q_PROPERTY(QString partialText READ partialText NOTIFY partialTextChanged)
     Q_PROPERTY(QString fullText READ fullText NOTIFY fullTextChanged)
     Q_PROPERTY(int durationSec READ durationSec NOTIFY durationSecChanged)
@@ -43,7 +44,8 @@ public:
     bool loading() const { return m_loading; }
     bool recording() const { return m_recording; }
     bool finalizing() const { return m_finalizing; }
-    qreal level() const { return m_level; }
+        bool paused() const { return m_paused; }
+        qreal level() const { return m_level; }
     QString partialText() const { return m_partialText; }
     QString fullText() const { return m_fullText; }
     int durationSec() const { return m_durationSec; }
@@ -56,7 +58,11 @@ public slots:
     // Stops capture, flushes the recognizer and emits finished().
     void stop();
     // Aborts capture and discards the current recording/recognition.
-    void cancel();
+        void cancel();
+        // Pauses audio capture without discarding the accumulated PCM buffer.
+        void pause();
+        // Resumes audio capture after a pause.
+        void resume();
 
     // Saves arbitrary text to a file (UTF-8). Handles file:// URLs and local paths.
     Q_INVOKABLE bool saveTextToFile(const QString &filePath, const QString &text);
@@ -67,7 +73,8 @@ signals:
     void loadingChanged();
     void recordingChanged();
     void finalizingChanged();
-    void levelChanged();
+        void pausedChanged();
+        void levelChanged();
     void partialTextChanged();
     void fullTextChanged();
     void durationSecChanged();
@@ -95,7 +102,8 @@ private:
     void setModelReady(bool v);
     void setRecording(bool v);
     void setFinalizing(bool v);
-    void setLevel(qreal v);
+        void setPaused(bool v);
+        void setLevel(qreal v);
     void setPartialText(const QString &v);
     void appendText(const QString &v);
     void teardownAudio();
@@ -107,7 +115,8 @@ private:
     bool m_loading;
     bool m_recording;
     bool m_finalizing;
-    qreal m_level;
+        bool m_paused;
+        qreal m_level;
     QString m_partialText;
     QString m_fullText;
     int m_durationSec;

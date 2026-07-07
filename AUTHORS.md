@@ -12,3 +12,8 @@
     *   Developer, 2026
 *   Ivanov Roman
     *   Developer, 2026
+
+### Maintainer
+
+*   Gunnenkov Mikhail
+    *   Maintainer, 2026

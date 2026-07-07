@@ -43,3 +43,18 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Qt/C++ build artifacts
+*.o
+moc_*.cpp
+moc_*.o
+Makefile
+ru.omstu.STT
+documentation.list
+RPMS/
+
+# Qt Creator user files
+*.pro.user*
+
+# Compiled translations
+*.qm

@@ -43,12 +43,17 @@
 <context>
     <name>DefaultCoverPage</name>
     <message>
-        <location filename="../qml/cover/DefaultCoverPage.qml" line="30"/>
+        <location filename="../qml/cover/DefaultCoverPage.qml" line="44"/>
+        <source>Пауза</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/cover/DefaultCoverPage.qml" line="47"/>
         <source>Заметок: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/cover/DefaultCoverPage.qml" line="30"/>
+        <location filename="../qml/cover/DefaultCoverPage.qml" line="46"/>
         <source>Идёт запись...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -114,64 +119,64 @@
 <context>
     <name>NoteViewPage</name>
     <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="108"/>
+        <location filename="../qml/pages/NoteViewPage.qml" line="104"/>
         <source>Заметка</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="148"/>
+        <location filename="../qml/pages/NoteViewPage.qml" line="144"/>
         <source>Аудиозапись</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="244"/>
+        <location filename="../qml/pages/NoteViewPage.qml" line="240"/>
         <source>Расшифровка</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="262"/>
+        <location filename="../qml/pages/NoteViewPage.qml" line="258"/>
         <source>Экспорт</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="272"/>
+        <location filename="../qml/pages/NoteViewPage.qml" line="268"/>
         <source>Копировать текст в буфер обмена</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="64"/>
+        <location filename="../qml/pages/NoteViewPage.qml" line="60"/>
         <source>Текст скопирован в буфер обмена</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="51"/>
+        <location filename="../qml/pages/NoteViewPage.qml" line="47"/>
         <source>Текст сохранён: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <location filename="../qml/pages/NoteViewPage.qml" line="49"/>
         <location filename="../qml/pages/NoteViewPage.qml" line="53"/>
-        <location filename="../qml/pages/NoteViewPage.qml" line="57"/>
         <source>Не удалось сохранить файл</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="81"/>
+        <location filename="../qml/pages/NoteViewPage.qml" line="77"/>
         <source>Удалить заметку</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="83"/>
+        <location filename="../qml/pages/NoteViewPage.qml" line="79"/>
         <source>Удаление заметки</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="92"/>
-        <location filename="../qml/pages/NoteViewPage.qml" line="278"/>
+        <location filename="../qml/pages/NoteViewPage.qml" line="88"/>
+        <location filename="../qml/pages/NoteViewPage.qml" line="274"/>
         <source>Экспортировать текст в файл</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="96"/>
+        <location filename="../qml/pages/NoteViewPage.qml" line="92"/>
         <source>Копировать текст</source>
         <translation type="unfinished"></translation>
     </message>
@@ -219,32 +224,27 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="181"/>
-        <source>Отменить</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="224"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="267"/>
         <source>Загрузка модели распознавания...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="225"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="268"/>
         <source>Модель распознавания недоступна</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="226"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="269"/>
         <source>Нажмите стоп, чтобы завершить запись</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="227"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="270"/>
         <source>Ожидайте завершения расшифровки</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="228"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="271"/>
         <source>Нажмите на микрофон, чтобы начать запись</source>
         <translation type="unfinished"></translation>
     </message>
@@ -257,17 +257,19 @@
 <context>
     <name>SpeechRecognizer</name>
     <message>
-        <location filename="../src/speechrecognizer.cpp" line="203"/>
+        <location filename="../src/speechrecognizer.cpp" line="204"/>
+        <location filename="../src/speechrecognizer.cpp" line="352"/>
         <source>Микрофон недоступен</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/speechrecognizer.cpp" line="214"/>
+        <location filename="../src/speechrecognizer.cpp" line="215"/>
+        <location filename="../src/speechrecognizer.cpp" line="359"/>
         <source>Не удалось начать запись с микрофона</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/speechrecognizer.cpp" line="276"/>
+        <location filename="../src/speechrecognizer.cpp" line="277"/>
         <source>Микрофон не передаёт звук. В эмуляторе запись микрофона обычно недоступна — проверьте на устройстве или включите аудиовход эмулятора.</source>
         <translation type="unfinished"></translation>
     </message>

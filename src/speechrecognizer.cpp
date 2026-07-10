@@ -24,7 +24,7 @@ const int kChannels = 1;
 
 SpeechRecognizer::SpeechRecognizer(QObject *parent)
     : QObject(parent)
-    , m_modelPath(QStringLiteral("/usr/share/ru.omstu.STT/models/vosk-model-small-ru-0.22"))
+    , m_modelPath(QStringLiteral("/usr/share/ru.omstu.voicenotes/models/vosk-model-small-ru-0.22"))
     , m_sampleRate(kSampleRate)
     , m_modelReady(false)
     , m_loading(false)
@@ -389,7 +389,7 @@ QString SpeechRecognizer::writeWav(const QByteArray &pcm) const
 {
     QString dirPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     if (dirPath.isEmpty()) {
-        dirPath = QDir::homePath() + QStringLiteral("/.local/share/ru.omstu.STT");
+        dirPath = QDir::homePath() + QStringLiteral("/.local/share/ru.omstu.voicenotes");
     }
     dirPath += QStringLiteral("/audio");
     QDir dir;

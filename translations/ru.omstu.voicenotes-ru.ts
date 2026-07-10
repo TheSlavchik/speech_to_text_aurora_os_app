@@ -1,59 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="en">
+<TS version="2.1" language="ru">
 <context>
     <name>AboutPage</name>
     <message>
         <location filename="../qml/pages/AboutPage.qml" line="20"/>
         <source>About Application</source>
-        <translation>About Application</translation>
+        <translation>О приложении</translation>
     </message>
     <message>
         <location filename="../qml/pages/AboutPage.qml" line="30"/>
         <source>#descriptionText</source>
-        <translation>&lt;p&gt;SpeechToText — an offline voice recorder with on-device speech-to-text transcription, developed in C++/Qt (Sailfish Silica) for running on Aurora OS.&lt;/p&gt;
-&lt;p&gt;Key features:&lt;/p&gt;
+        <translation>&lt;p&gt;«Voice Notes» — офлайн-диктофон с расшифровкой речи в текст прямо на устройстве, разработанный на C++/Qt для ОС Аврора.&lt;/p&gt;
+&lt;p&gt;Основные возможности:&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;Microphone recording with start/stop, duration and signal level indication&lt;/li&gt;
-&lt;li&gt;Background on-device transcription with progress indication and cancellation&lt;/li&gt;
-&lt;li&gt;Notes (title + date + audio file + text) stored in the application data directory&lt;/li&gt;
-&lt;li&gt;Note viewing with audio playback&lt;/li&gt;
-&lt;li&gt;Full-text search through the transcripts&lt;/li&gt;
-&lt;li&gt;Text export to a file or to the clipboard&lt;/li&gt;
+&lt;li&gt;Запись с микрофона: старт/стоп, индикация длительности и уровня сигнала&lt;/li&gt;
+&lt;li&gt;Фоновая расшифровка на устройстве с индикатором прогресса и возможностью отмены&lt;/li&gt;
+&lt;li&gt;Заметки (заголовок + дата + аудиофайл + текст) хранятся в каталоге данных приложения&lt;/li&gt;
+&lt;li&gt;Просмотр заметки с воспроизведением аудио&lt;/li&gt;
+&lt;li&gt;Полнотекстовый поиск по расшифровкам&lt;/li&gt;
+&lt;li&gt;Экспорт текста в файл или в буфер обмена&lt;/li&gt;
 &lt;/ul&gt;</translation>
     </message>
     <message>
         <location filename="../qml/pages/AboutPage.qml" line="35"/>
         <source>3-Clause BSD License</source>
-        <translation>3-Clause BSD License</translation>
+        <translation>Лицензия 3-Clause BSD</translation>
     </message>
     <message>
         <location filename="../qml/pages/AboutPage.qml" line="45"/>
         <source>#licenseText</source>
-        <translation>&lt;p&gt;&lt;i&gt;Copyright © 2026 Omsk State Technical University (Chair of Applied Mathematics and Computer Science).&lt;/i&gt;&lt;/p&gt;
-&lt;p&gt;Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:&lt;/p&gt;
-&lt;ol&gt;
-	&lt;li&gt;Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.&lt;/li&gt;
-	&lt;li&gt;Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.&lt;/li&gt;
-	&lt;li&gt;Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.&lt;/li&gt;
-&lt;/ol&gt;
-&lt;p&gt;THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.&lt;/p&gt;</translation>
+        <translation>&lt;p&gt;&lt;i&gt;Copyright © 2026 Omsk State Technical University (Chair of Applied Mathematics and Computer Science).&lt;/i&gt;&lt;/p&gt;
+        &lt;p&gt;Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:&lt;/p&gt;
+        &lt;ol&gt;
+        	&lt;li&gt;Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.&lt;/li&gt;
+        	&lt;li&gt;Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.&lt;/li&gt;
+        	&lt;li&gt;Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.&lt;/li&gt;
+        &lt;/ol&gt;
+        &lt;p&gt;THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&quot; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.&lt;/p&gt;</translation>
     </message>
 </context>
 <context>
     <name>DefaultCoverPage</name>
     <message>
-        <location filename="../qml/cover/DefaultCoverPage.qml" line="44"/>
+        <location filename="../qml/cover/DefaultCoverPage.qml" line="41"/>
         <source>Пауза</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/cover/DefaultCoverPage.qml" line="47"/>
+        <location filename="../qml/cover/DefaultCoverPage.qml" line="44"/>
         <source>Заметок: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/cover/DefaultCoverPage.qml" line="46"/>
+        <location filename="../qml/cover/DefaultCoverPage.qml" line="43"/>
         <source>Идёт запись...</source>
         <translation type="unfinished"></translation>
     </message>
@@ -61,58 +61,83 @@
 <context>
     <name>MainPage</name>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="70"/>
-        <source>SpeechToText</source>
+        <location filename="../qml/pages/MainPage.qml" line="62"/>
+        <source>Удаление заметок</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="99"/>
+        <location filename="../qml/pages/MainPage.qml" line="125"/>
+        <source>Переименовать заметку</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainPage.qml" line="129"/>
+        <source>Название заметки</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainPage.qml" line="195"/>
+        <source>Выбрано: %1</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainPage.qml" line="258"/>
         <source>Загрузка модели распознавания речи...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="151"/>
+        <location filename="../qml/pages/MainPage.qml" line="298"/>
         <source>Идёт запись...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="169"/>
+        <location filename="../qml/pages/MainPage.qml" line="314"/>
         <source>Поиск по заметкам...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="187"/>
+        <location filename="../qml/pages/MainPage.qml" line="331"/>
         <source>О программе</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="191"/>
+        <location filename="../qml/pages/MainPage.qml" line="335"/>
         <source>Скрыть поиск</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="191"/>
+        <location filename="../qml/pages/MainPage.qml" line="335"/>
         <source>Поиск</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="198"/>
+        <location filename="../qml/pages/MainPage.qml" line="341"/>
         <source>Нет заметок</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="199"/>
+        <location filename="../qml/pages/MainPage.qml" line="342"/>
         <source>Нажмите на микрофон, чтобы начать запись</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="223"/>
-        <source>Удаление заметки</source>
+        <location filename="../qml/pages/MainPage.qml" line="404"/>
+        <source>Действие 1 (заглушка)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="291"/>
-        <source>Удалить</source>
+        <location filename="../qml/pages/MainPage.qml" line="405"/>
+        <source>Действие 2 (заглушка)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainPage.qml" line="406"/>
+        <source>Действие 3 (заглушка)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainPage.qml" line="425"/>
+        <source>Удаление заметки</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -184,72 +209,67 @@
 <context>
     <name>RecordingPage</name>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="29"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="27"/>
         <source>Речь не распознана. Попробуйте записать ещё раз.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="65"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="63"/>
         <source>Запись</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="66"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="64"/>
         <source>Расшифровка</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="67"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="65"/>
         <source>Загрузка модели</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="68"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="66"/>
         <source>Готов к записи</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="112"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="97"/>
         <source>MIC</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="144"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="222"/>
         <source>Завершаем расшифровку...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="145"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="223"/>
         <source>Распознавание речи...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="267"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="262"/>
         <source>Загрузка модели распознавания...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="268"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="263"/>
         <source>Модель распознавания недоступна</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="269"/>
-        <source>Нажмите стоп, чтобы завершить запись</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="270"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="264"/>
         <source>Ожидайте завершения расшифровки</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="271"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="265"/>
         <source>Нажмите на микрофон, чтобы начать запись</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="36"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="34"/>
         <source>Запись от %1</source>
         <translation type="unfinished"></translation>
     </message>

@@ -1,14 +1,12 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
-import ru.omstu.STT 1.0
+import ru.omstu.voicenotes 1.0
 import "../Database.js" as Db
 
 CoverBackground {
     id: cover
     objectName: "defaultCover"
-
     property string notesCount: "0"
-
     function refreshCount() {
         notesCount = "" + Db.notesCount()
     }
@@ -26,11 +24,10 @@ CoverBackground {
         onFinished: refreshCount()
     }
 
-    // Reserve space above the CoverActionList by applying a bottom margin.
     Item {
         anchors {
             fill: parent
-            bottomMargin: SpeechRecognizer.recording ? Theme._coverActionsAreaHorizontalHeight : 0
+            bottomMargin: Theme._coverActionsAreaHorizontalHeight
         }
 
         Column {
@@ -58,6 +55,15 @@ CoverBackground {
                 font.pixelSize: Theme.fontSizeSmall
                 visible: SpeechRecognizer.recording
             }
+        }
+    }
+
+    CoverActionList {
+        enabled: !SpeechRecognizer.recording
+
+        CoverAction {
+            iconSource: "image://theme/icon-m-mic"
+            onTriggered: SpeechRecognizer.start()
         }
     }
 

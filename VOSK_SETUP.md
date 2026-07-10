@@ -20,7 +20,7 @@
    ```
 
 При сборке она устанавливается в
-`/usr/share/ru.omstu.STT/models/vosk-model-small-ru-0.22` — оттуда приложение её
+`/usr/share/ru.omstu.voicenotes/models/vosk-model-small-ru-0.22` — оттуда приложение её
 и грузит (путь задан по умолчанию в `SpeechRecognizer`).
 
 ## 2. Библиотека libvosk.so под aarch64 (обязательно)
@@ -50,7 +50,7 @@ speechtotext/
   glibc, библиотеку придётся собрать из исходников внутри сборочного окружения
   Авроры (Aurora Platform SDK / mb2), см. README в репозитории vosk-api.
 
-Библиотека ставится в `/usr/share/ru.omstu.STT/lib`, приложение находит её через
+Библиотека ставится в `/usr/share/ru.omstu.voicenotes/lib`, приложение находит её через
 rpath (задан в .pro).
 
 Валидатор Авроры запрещает пакету «предоставлять/требовать» сторонние
@@ -110,7 +110,7 @@ libvosk зависит от libatomic.so.1, которой по умолчани
 
 ## 4. Разрешение на микрофон
 
-В `ru.omstu.STT.desktop` уже указано `Permissions=Audio;Microphone;UserDirs`.
+В `ru.omstu.voicenotes.desktop` уже указано `Permissions=Audio;Microphone;UserDirs`.
 При первом запуске система может спросить доступ к микрофону — разрешить.
 
 ## Как это работает

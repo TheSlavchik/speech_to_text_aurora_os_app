@@ -1,4 +1,4 @@
-TARGET = ru.omstu.STT
+TARGET = ru.omstu.voicenotes
 
 CONFIG += \
     auroraapp \
@@ -45,8 +45,8 @@ voskmodel.path = /usr/share/$${TARGET}/models
 INSTALLS += voskmodel
 
 DISTFILES += \
-    rpm/ru.omstu.STT.spec \
-    qml/STT.qml \
+    rpm/ru.omstu.voicenotes.spec \
+    qml/voicenotes.qml \
     qml/Database.js \
     qml/cover/DefaultCoverPage.qml \
     qml/pages/MainPage.qml \
@@ -59,5 +59,5 @@ AURORAAPP_ICONS = 86x86 108x108 128x128 172x172
 CONFIG += auroraapp_i18n
 
 TRANSLATIONS += \
-    translations/ru.omstu.STT.ts \
-    translations/ru.omstu.STT-ru.ts \
+    translations/ru.omstu.voicenotes.ts \
+    translations/ru.omstu.voicenotes-ru.ts \

@@ -2,7 +2,7 @@ import QtQuick 2.0
 import Sailfish.Silica 1.0
 import QtMultimedia 5.6
 import Nemo.Notifications 1.0
-import ru.omstu.STT 1.0
+import ru.omstu.voicenotes 1.0
 import "../Database.js" as Db
 
 Page {

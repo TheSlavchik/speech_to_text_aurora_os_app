@@ -1,4 +1,4 @@
-Name:       ru.omstu.STT
+Name:       ru.omstu.voicenotes
 Summary:    Моё приложения для ОС Аврора
 Version:    0.3
 Release:    1
@@ -12,7 +12,7 @@ Requires:   sailfishsilica-qt5 >= 0.10.9
 %define _unpackaged_files_terminate_build 0
 
 # libvosk.so и libatomic.so.1 — приватные библиотеки, лежащие ВНУТРИ пакета
-# (в /usr/share/ru.omstu.STT/lib). Валидатор Авроры запрещает пакету и
+# (в /usr/share/ru.omstu.voicenotes/lib). Валидатор Авроры запрещает пакету и
 # экспортировать их как системный Provides, и требовать их как внешние
 # зависимости. Поэтому исключаем авто-Provides для файлов из нашего lib-каталога
 # и авто-Requires на сырые soname libvosk.so / libatomic.so.1.

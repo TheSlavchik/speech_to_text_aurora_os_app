@@ -4,7 +4,7 @@
 // Persistent storage for voice notes (SQLite via QtQuick.LocalStorage, Qt 5.6).
 
 function getDatabase() {
-    var db = Sql.LocalStorage.openDatabaseSync("STTNotes", "1.0",
+    var db = Sql.LocalStorage.openDatabaseSync("voicenotes", "1.0",
                                                "Speech-to-text notes", 1000000)
     db.transaction(function(tx) {
         tx.executeSql("CREATE TABLE IF NOT EXISTS notes ("
@@ -79,4 +79,26 @@ function notesCount() {
         }
     })
     return count
-}
+    }
+
+    function deleteNotes(ids) {
+        if (!ids || ids.length === 0) return 0
+        var db = getDatabase()
+        var count = 0
+        db.transaction(function(tx) {
+            var placeholders = ids.map(function() { return "?" }).join(",")
+            var r = tx.executeSql("DELETE FROM notes WHERE id IN (" + placeholders + ")", ids)
+            count = r.rowsAffected
+        })
+        return count
+    }
+
+    function updateNoteTitle(id, newTitle) {
+        var db = getDatabase()
+        var ok = false
+        db.transaction(function(tx) {
+            var r = tx.executeSql("UPDATE notes SET title = ? WHERE id = ?", [newTitle, id])
+            ok = r.rowsAffected > 0
+        })
+        return ok
+    }

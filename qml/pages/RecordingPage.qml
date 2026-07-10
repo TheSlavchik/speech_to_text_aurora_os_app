@@ -1,7 +1,7 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import Nemo.Notifications 1.0
-import ru.omstu.STT 1.0
+import ru.omstu.voicenotes 1.0
 import "../Database.js" as Db
 
 Page {
@@ -18,14 +18,12 @@ Page {
         return (min < 10 ? "0" : "") + min + ":" + (sec < 10 ? "0" : "") + sec
     }
 
-    // Offline speech recognition — uses the global instance from STT.qml.
     Connections {
         target: SpeechRecognizer
 
         onFinished: {
             var clean = text ? text.trim() : ""
             if (clean.length === 0) {
-                // Nothing intelligible was captured.
                 statusNotification.previewBody = qsTr("Речь не распознана. Попробуйте записать ещё раз.")
                 statusNotification.publish()
                 return
@@ -68,20 +66,7 @@ Page {
                        qsTr("Готов к записи")
             }
 
-            // Model loading indicator (model is loaded once, in background).
-            Item {
-                width: parent.width
-                height: Theme.itemSizeExtraLarge
-                visible: SpeechRecognizer.loading
-
-                BusyIndicator {
-                    anchors.centerIn: parent
-                    running: SpeechRecognizer.loading
-                    size: BusyIndicatorSize.Medium
-                }
-            }
-
-            // Signal level visualization.
+            // Signal level visualization
             Item {
                 id: signalLevelContainer
                 width: parent.width
@@ -116,7 +101,7 @@ Page {
                 }
             }
 
-            // Duration display.
+            // Duration display
             Label {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: formatTime(SpeechRecognizer.durationSec)
@@ -128,59 +113,7 @@ Page {
 
             Item { width: 1; height: Theme.paddingLarge }
 
-            // Live transcription (interim + accepted text).
-            Item {
-                width: parent.width - 2 * Theme.horizontalPageMargin
-                anchors.horizontalCenter: parent.horizontalCenter
-                height: liveColumn.height
-                visible: SpeechRecognizer.recording || SpeechRecognizer.finalizing
-
-                Column {
-                    id: liveColumn
-                    width: parent.width
-
-                    Label {
-                        width: parent.width
-                        text: SpeechRecognizer.finalizing ? qsTr("Завершаем расшифровку...")
-                                                    : qsTr("Распознавание речи...")
-                        color: Theme.secondaryColor
-                        font.pixelSize: Theme.fontSizeSmall
-                        horizontalAlignment: Text.AlignHCenter
-                    }
-
-                    Item { width: 1; height: Theme.paddingSmall }
-
-                    ProgressBar {
-                        width: parent.width
-                        indeterminate: true
-                        visible: SpeechRecognizer.finalizing
-                    }
-
-                    Item { width: 1; height: Theme.paddingSmall }
-
-                    Label {
-                        width: parent.width
-                        text: {
-                            var acc = SpeechRecognizer.fullText
-                            var part = SpeechRecognizer.partialText
-                            if (part.length > 0)
-                                return (acc.length > 0 ? acc + " " : "") + part
-                            return acc
-                        }
-                        color: Theme.primaryColor
-                        font.pixelSize: Theme.fontSizeSmall
-                        wrapMode: Text.WordWrap
-                        horizontalAlignment: Text.AlignHCenter
-                        visible: text.length > 0
-                    }
-
-
-                }
-            }
-
-            Item { width: 1; height: Theme.paddingLarge }
-
-            // Control buttons row: Отмена | Пауза | Запись/Стоп
+            // Control buttons row: Cancel | Pause | Record/Stop
             Row {
                 anchors.horizontalCenter: parent.horizontalCenter
                 spacing: Theme.paddingLarge
@@ -258,15 +191,76 @@ Page {
                 }
             }
 
-            Item { width: 1; height: Theme.paddingMedium }
+            // Model loading indicator (moved below buttons)
+            Item {
+                width: parent.width
+                height: Theme.itemSizeExtraLarge
+                visible: SpeechRecognizer.loading
 
+                BusyIndicator {
+                    anchors.centerIn: parent
+                    running: SpeechRecognizer.loading
+                    size: BusyIndicatorSize.Medium
+                }
+            }
+
+            Item { width: 1; height: Theme.paddingLarge }
+
+            // Live transcription (moved below buttons)
+            Item {
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                anchors.horizontalCenter: parent.horizontalCenter
+                height: liveColumn.height
+                visible: SpeechRecognizer.recording || SpeechRecognizer.finalizing
+
+                Column {
+                    id: liveColumn
+                    width: parent.width
+
+                    Label {
+                        width: parent.width
+                        text: SpeechRecognizer.finalizing ? qsTr("Завершаем расшифровку...")
+                                                    : qsTr("Распознавание речи...")
+                        color: Theme.secondaryColor
+                        font.pixelSize: Theme.fontSizeSmall
+                        horizontalAlignment: Text.AlignHCenter
+                    }
+
+                    Item { width: 1; height: Theme.paddingSmall }
+
+                    ProgressBar {
+                        width: parent.width
+                        indeterminate: true
+                        visible: SpeechRecognizer.finalizing
+                    }
+
+                    Item { width: 1; height: Theme.paddingSmall }
+
+                    Label {
+                        width: parent.width
+                        text: {
+                            var acc = SpeechRecognizer.fullText
+                            var part = SpeechRecognizer.partialText
+                            if (part.length > 0)
+                                return (acc.length > 0 ? acc + " " : "") + part
+                            return acc
+                        }
+                        color: Theme.primaryColor
+                        font.pixelSize: Theme.fontSizeSmall
+                        wrapMode: Text.WordWrap
+                        horizontalAlignment: Text.AlignHCenter
+                        visible: text.length > 0
+                    }
+                }
+            }
+
+            // Hint label – hidden only while recording
             Label {
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: parent.width - 2 * Theme.horizontalPageMargin
                 text: {
                     if (SpeechRecognizer.loading) return qsTr("Загрузка модели распознавания...")
                     if (!SpeechRecognizer.modelReady) return qsTr("Модель распознавания недоступна")
-                    if (SpeechRecognizer.recording) return qsTr("Нажмите стоп, чтобы завершить запись")
                     if (SpeechRecognizer.finalizing) return qsTr("Ожидайте завершения расшифровки")
                     return qsTr("Нажмите на микрофон, чтобы начать запись")
                 }
@@ -274,6 +268,7 @@ Page {
                 font.pixelSize: Theme.fontSizeExtraSmall
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WordWrap
+                visible: !SpeechRecognizer.recording
             }
         }
 

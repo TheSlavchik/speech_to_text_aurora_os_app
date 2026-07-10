@@ -1,6 +1,6 @@
 [Омский государственный технический университет (OmSTU)](https://omgtu.ru)
 
-«ГолосВТекст» (SpeechToText) — офлайн-диктофон с расшифровкой речи в текст прямо на устройстве, разработанный на C++/Qt (Sailfish Silica) для запуска на ОС Аврора.
+«Голосовые заметки» (Voice Notes) — офлайн-диктофон с расшифровкой речи в текст прямо на устройстве, разработанный на C++/Qt (Sailfish Silica) для запуска на ОС Аврора.
 
 Записали лекцию, встречу или идею — приложение расшифровало речь и сохранило заметку с текстом и аудио, по которой можно искать информацию. Распознавание выполняется полностью на устройстве с помощью движка [Vosk](https://alphacephei.com/vosk/): интернет не требуется, записи никуда не отправляются.
 
@@ -17,10 +17,10 @@
 ## Сборка проекта
 
 - установить [Aurora SDK](https://developer.auroraos.ru/doc/software_development/sdk) (Aurora Build Tools вместе с Qt Creator) и настроить эмулятор или подключение к устройству в соответствии с [документацией](https://developer.auroraos.ru/doc)
-- открыть `ru.omstu.SpeechToText.pro` в Qt Creator и выбрать комплект `AuroraOS-…-aarch64` (устройство) или `AuroraOS-…-x86_64` (эмулятор)
+- открыть `ru.omstu.voicenotes.pro` в Qt Creator и выбрать комплект `AuroraOS-…-aarch64` (устройство) или `AuroraOS-…-x86_64` (эмулятор)
 - (опционально, необходимо для реального распознавания речи) подключить движок Vosk, передав qmake каталог с `vosk_api.h` и `libvosk.so`: `qmake VOSK_DIR={path/to/vosk}`. Без Vosk приложение собирается и запускается, но при расшифровке сообщает, что движок распознавания недоступен
 - собрать проект (Ctrl+B) — RPM-пакет появится в `build/…/RPMS/`
-- положить речевую модель Vosk (например, [`vosk-model-small-ru`](https://alphacephei.com/vosk/models)) на устройство в каталог `~/.local/share/ru.omstu.SpeechToText/model` или включить её в пакет по пути `/usr/share/ru.omstu.SpeechToText/model`
+- положить речевую модель Vosk (например, [`vosk-model-small-ru`](https://alphacephei.com/vosk/models)) на устройство в каталог `~/.local/share/ru.omstu.voicenotes/model` или включить её в пакет по пути `/usr/share/ru.omstu.voicenotes/model`
 
 ## Подпись и установка пакета на устройство
 

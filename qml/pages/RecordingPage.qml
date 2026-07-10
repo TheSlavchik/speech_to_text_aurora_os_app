@@ -23,24 +23,13 @@ Page {
 
         onFinished: {
             var clean = text ? text.trim() : ""
-            if (clean.length === 0) {
-                statusNotification.previewBody = qsTr("Речь не распознана. Попробуйте записать ещё раз.")
-                statusNotification.publish()
-                return
-            }
-
-            var now = new Date()
-            var dateStr = Qt.formatDateTime(now, "dd.MM.yyyy hh:mm")
-            var title = qsTr("Запись от %1").arg(dateStr)
-            var durStr = formatTime(durationSec)
-
-            var newId = Db.addNote(title, dateStr, clean, durStr, audioPath)
+            // Note is saved centrally by ApplicationWindow
             pageStack.replace(Qt.resolvedUrl("NoteViewPage.qml"), {
-                noteId: newId,
-                noteTitle: title,
-                noteDate: dateStr,
+                noteId: appWindow.lastNoteId,
+                noteTitle: qsTr("Запись от %1").arg(Qt.formatDateTime(new Date(), "dd.MM.yyyy hh:mm")),
+                noteDate: Qt.formatDateTime(new Date(), "dd.MM.yyyy hh:mm"),
                 noteText: clean,
-                noteDuration: durStr,
+                noteDuration: formatTime(durationSec),
                 noteAudio: audioPath
             })
         }

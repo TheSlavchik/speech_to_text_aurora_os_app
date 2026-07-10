@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import ru.omstu.voicenotes 1.0
 import "../Database.js" as Db
 
 Page {
@@ -109,10 +110,16 @@ Page {
     Component.onCompleted: {
         modelLoaded = true
         reloadNotes()
+        appWindow.mainPage = mainPage
     }
 
     onStatusChanged: {
         if (status === PageStatus.Active) reloadNotes()
+    }
+
+    Connections {
+        target: SpeechRecognizer
+        onFinished: reloadNotes()
     }
 
     // --- Rename dialog ---

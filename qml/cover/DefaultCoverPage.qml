@@ -7,11 +7,18 @@ CoverBackground {
     id: cover
     objectName: "defaultCover"
     property string notesCount: "0"
+    property bool modelReady: false
+    property bool modelLoading: true
+
     function refreshCount() {
         notesCount = "" + Db.notesCount()
     }
 
-    Component.onCompleted: refreshCount()
+    Component.onCompleted: {
+        refreshCount()
+        SpeechRecognizer.init()
+        appWindow.coverPage = cover
+    }
 
     onStatusChanged: {
         if (status === Cover.Active) {
@@ -21,7 +28,16 @@ CoverBackground {
 
     Connections {
         target: SpeechRecognizer
-        onFinished: refreshCount()
+        onModelReadyChanged: {
+            modelReady = SpeechRecognizer.modelReady
+        }
+        onLoadingChanged: {
+            modelLoading = SpeechRecognizer.loading
+        }
+        onFinished: {
+            refreshCount()
+            // Saving is handled by ApplicationWindow (imperative connect)
+        }
     }
 
     Item {
@@ -37,6 +53,10 @@ CoverBackground {
             Label {
                 anchors.horizontalCenter: parent.horizontalCenter
                 text: {
+                    if (modelLoading)
+                        return qsTr("Загрузка модели...")
+                    if (!modelReady && !SpeechRecognizer.recording)
+                        return qsTr("Модель недоступна")
                     if (SpeechRecognizer.paused)
                         return qsTr("Пауза")
                     if (SpeechRecognizer.recording)
@@ -59,7 +79,7 @@ CoverBackground {
     }
 
     CoverActionList {
-        enabled: !SpeechRecognizer.recording
+        enabled: modelReady && !SpeechRecognizer.recording
 
         CoverAction {
             iconSource: "image://theme/icon-m-mic"

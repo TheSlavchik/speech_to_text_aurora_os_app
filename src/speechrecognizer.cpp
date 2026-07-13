@@ -456,3 +456,17 @@ bool SpeechRecognizer::saveTextToFile(const QString &filePath, const QString &te
     file.close();
     return true;
 }
+
+int SpeechRecognizer::fileSize(const QString &path) const
+{
+    QString localPath = path;
+    if (localPath.startsWith(QLatin1String("file://"))) {
+        QUrl url(localPath);
+        localPath = url.toLocalFile();
+    }
+    QFile f(localPath);
+    if (!f.exists()) {
+        return 0;
+    }
+    return static_cast<int>(f.size());
+}

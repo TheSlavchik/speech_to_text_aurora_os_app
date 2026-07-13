@@ -66,6 +66,8 @@ public slots:
 
     // Saves arbitrary text to a file (UTF-8). Handles file:// URLs and local paths.
     Q_INVOKABLE bool saveTextToFile(const QString &filePath, const QString &text);
+    // Returns the size of a file in bytes, or 0 on error. Handles file:// URLs.
+    Q_INVOKABLE int fileSize(const QString &path) const;
 
 signals:
     void modelPathChanged();

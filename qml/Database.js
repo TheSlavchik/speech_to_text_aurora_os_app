@@ -15,6 +15,12 @@ function getDatabase() {
                       + "duration TEXT, "
                       + "audio TEXT, "
                       + "created INTEGER)")
+        // Add file_size column if upgrading from older schema
+        try {
+            tx.executeSql("ALTER TABLE notes ADD COLUMN file_size INTEGER DEFAULT 0")
+        } catch (e) {
+            // Column already exists — ignore
+        }
     })
     return db
 }
@@ -27,15 +33,79 @@ function makePreview(text) {
     return t
 }
 
-// Load all notes (newest first) into the given ListModel.
-function loadNotes(model) {
+// Formats bytes into human-readable size (KB or MB).
+function formatFileSize(bytes) {
+    if (!bytes || bytes === 0) {
+        return "0 KB"
+    }
+    if (bytes >= 1048576) {
+        return (bytes / 1048576.0).toFixed(1) + " MB"
+    }
+    if (bytes >= 1024) {
+        return Math.round(bytes / 1024.0) + " KB"
+    }
+    return bytes + " B"
+}
+
+// Convert duration string "MM:SS" to total seconds.
+function durationToSeconds(duration) {
+    if (!duration) return 0
+    var parts = duration.split(":")
+    if (parts.length !== 2) return 0
+    var min = parseInt(parts[0]) || 0
+    var sec = parseInt(parts[1]) || 0
+    return min * 60 + sec
+}
+
+// Load all notes into the given ListModel.
+// sortMode: "date" (default), "title", "duration", "size"
+// sortDir: "desc" (default) or "asc"
+function loadNotes(model, sortMode, sortDir) {
+    var mode = sortMode || "date"
+    var dir = sortDir || "desc"
+    var order = ""
+    var sortInJS = false
+
+    if (mode === "date") {
+        order = dir === "asc" ? "ORDER BY created ASC" : "ORDER BY created DESC"
+    } else if (mode === "title") {
+        order = dir === "asc" ? "ORDER BY title ASC" : "ORDER BY title DESC"
+    } else if (mode === "duration") {
+        // Sort by duration in JS
+        order = "ORDER BY created DESC"
+        sortInJS = true
+    } else if (mode === "size") {
+        // Sort by file_size in JS
+        order = "ORDER BY created DESC"
+        sortInJS = true
+    }
+
     var db = getDatabase()
     db.readTransaction(function(tx) {
-        var rs = tx.executeSql("SELECT id, title, date, text, duration, audio "
-                               + "FROM notes ORDER BY created DESC")
-        model.clear()
+        var rs = tx.executeSql("SELECT id, title, date, text, duration, audio, file_size "
+                               + "FROM notes " + order)
+        var rows = []
         for (var i = 0; i < rs.rows.length; i++) {
-            var row = rs.rows.item(i)
+            rows.push(rs.rows.item(i))
+        }
+
+        if (sortInJS) {
+            if (mode === "duration") {
+                rows.sort(function(a, b) {
+                    var diff = durationToSeconds(a.duration) - durationToSeconds(b.duration)
+                    return dir === "asc" ? diff : -diff
+                })
+            } else if (mode === "size") {
+                rows.sort(function(a, b) {
+                    var diff = (a.file_size || 0) - (b.file_size || 0)
+                    return dir === "asc" ? diff : -diff
+                })
+            }
+        }
+
+        model.clear()
+        for (var j = 0; j < rows.length; j++) {
+            var row = rows[j]
             model.append({
                 "noteId": row.id,
                 "title": row.title,
@@ -43,20 +113,22 @@ function loadNotes(model) {
                 "text": row.text,
                 "preview": makePreview(row.text),
                 "duration": row.duration,
-                "audio": row.audio
+                "audio": row.audio,
+                "fileSize": formatFileSize(row.file_size || 0)
             })
         }
     })
 }
 
 // Insert a note. Returns the new note id, or -1 on failure.
-function addNote(title, date, text, duration, audio) {
+function addNote(title, date, text, duration, audio, fileSizeBytes) {
     var db = getDatabase()
     var newId = -1
+    var fs = fileSizeBytes || 0
     db.transaction(function(tx) {
-        var rs = tx.executeSql("INSERT INTO notes (title, date, text, duration, audio, created) "
-                               + "VALUES (?, ?, ?, ?, ?, ?)",
-                               [title, date, text, duration, audio, Date.now()])
+        var rs = tx.executeSql("INSERT INTO notes (title, date, text, duration, audio, file_size, created) "
+                               + "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                               [title, date, text, duration, audio, fs, Date.now()])
         newId = parseInt(rs.insertId)
     })
     return newId

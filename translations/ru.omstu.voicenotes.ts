@@ -71,52 +71,77 @@
 <context>
     <name>MainPage</name>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="63"/>
+        <location filename="../qml/pages/MainPage.qml" line="65"/>
         <source>Удаление заметок</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="143"/>
+        <location filename="../qml/pages/MainPage.qml" line="163"/>
         <source>Переименовать заметку</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="147"/>
+        <location filename="../qml/pages/MainPage.qml" line="167"/>
         <source>Название заметки</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="222"/>
+        <location filename="../qml/pages/MainPage.qml" line="206"/>
+        <source>По дате</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainPage.qml" line="232"/>
+        <source>По названию</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainPage.qml" line="258"/>
+        <source>По длительности</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainPage.qml" line="284"/>
+        <source>По весу</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainPage.qml" line="383"/>
         <source>Выбрано: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="347"/>
+        <location filename="../qml/pages/MainPage.qml" line="521"/>
         <source>Поиск по заметкам...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="390"/>
+        <location filename="../qml/pages/MainPage.qml" line="564"/>
         <source>Загрузка модели распознавания речи...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="430"/>
+        <location filename="../qml/pages/MainPage.qml" line="604"/>
         <source>Идёт запись...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="454"/>
+        <location filename="../qml/pages/MainPage.qml" line="628"/>
         <source>Нет заметок</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="455"/>
+        <location filename="../qml/pages/MainPage.qml" line="628"/>
+        <source>Ничего не найдено</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/MainPage.qml" line="629"/>
         <source>Нажмите на микрофон, чтобы начать запись</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="527"/>
+        <location filename="../qml/pages/MainPage.qml" line="701"/>
         <source>Удаление заметки</source>
         <translation type="unfinished"></translation>
     </message>
@@ -124,64 +149,38 @@
 <context>
     <name>NoteViewPage</name>
     <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="104"/>
-        <source>Заметка</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="144"/>
-        <source>Аудиозапись</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="240"/>
-        <source>Расшифровка</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="258"/>
-        <source>Экспорт</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="268"/>
-        <source>Копировать текст в буфер обмена</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="60"/>
+        <location filename="../qml/pages/NoteViewPage.qml" line="58"/>
         <source>Текст скопирован в буфер обмена</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="47"/>
+        <location filename="../qml/pages/NoteViewPage.qml" line="45"/>
         <source>Текст сохранён: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="49"/>
-        <location filename="../qml/pages/NoteViewPage.qml" line="53"/>
+        <location filename="../qml/pages/NoteViewPage.qml" line="47"/>
+        <location filename="../qml/pages/NoteViewPage.qml" line="51"/>
         <source>Не удалось сохранить файл</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="77"/>
+        <location filename="../qml/pages/NoteViewPage.qml" line="152"/>
+        <source>Экспортировать в файл</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../qml/pages/NoteViewPage.qml" line="176"/>
         <source>Удалить заметку</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="79"/>
+        <location filename="../qml/pages/NoteViewPage.qml" line="163"/>
         <source>Удаление заметки</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="88"/>
-        <location filename="../qml/pages/NoteViewPage.qml" line="274"/>
-        <source>Экспортировать текст в файл</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/NoteViewPage.qml" line="92"/>
+        <location filename="../qml/pages/NoteViewPage.qml" line="133"/>
         <source>Копировать текст</source>
         <translation type="unfinished"></translation>
     </message>

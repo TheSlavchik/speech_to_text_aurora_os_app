@@ -10,6 +10,8 @@ Page {
 
     property bool modelLoaded: false
     property bool isRecording: false
+    property string sortField: "date"
+    property string sortDir: "desc"
 
     // --- Multi-selection state ---
     property bool selectionMode: false
@@ -103,8 +105,26 @@ Page {
     }
 
     function reloadNotes() {
-        Db.loadNotes(notesModel)
+        Db.loadNotes(notesModel, sortField, sortDir)
         filterNotes(searchField.text)
+    }
+
+    function applySort(field) {
+        if (sortField === field) {
+            sortDir = sortDir === "asc" ? "desc" : "asc"
+        } else {
+            sortField = field
+            sortDir = "desc"
+        }
+        reloadNotes()
+    }
+
+    function openSortMenu() {
+        var btn = selectionMode ? sortButton2 : sortButton
+        var pos = btn.mapToItem(mainPage, 0, 0)
+        sortMenu.y = normalHeader.visible ? normalHeader.height : selectionHeader.height
+        sortMenu.x = Math.max(0, pos.x + btn.width - sortMenu.width)
+        sortMenu.visible = true
     }
 
     Timer {
@@ -157,6 +177,138 @@ Page {
         }
     }
 
+    // --- Sort dropdown menu ---
+    Rectangle {
+        id: sortMenu
+        visible: false
+        z: 101
+        width: Theme.itemSizeLarge * 3
+        height: sortColumn.height + Theme.paddingMedium * 2
+        color: Theme.overlayBackgroundColor
+        radius: 12
+        border.color: Theme.rgba(Theme.secondaryColor, 0.3)
+        border.width: 1
+
+        Column {
+            id: sortColumn
+            width: parent.width
+            anchors.centerIn: parent
+
+            BackgroundItem {
+                width: parent.width
+                height: Theme.itemSizeSmall
+                onClicked: applySort("date")
+                Row {
+                    anchors { fill: parent; leftMargin: Theme.paddingLarge; rightMargin: Theme.paddingLarge }
+                    spacing: Theme.paddingSmall
+                    Label {
+                        width: parent.width - arrowLabel.width - Theme.paddingSmall
+                        text: qsTr("По дате")
+                        color: sortField === "date" ? Theme.highlightColor : Theme.primaryColor
+                        font.pixelSize: Theme.fontSizeSmall
+                        truncationMode: TruncationMode.Fade
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                    Label {
+                        id: arrowLabel
+                        text: sortField === "date" ? (sortDir === "asc" ? "▲" : "▼") : ""
+                        color: Theme.secondaryColor
+                        font.pixelSize: Theme.fontSizeSmall
+                        anchors.verticalCenter: parent.verticalCenter
+                        visible: sortField === "date"
+                    }
+                }
+            }
+
+            BackgroundItem {
+                width: parent.width
+                height: Theme.itemSizeSmall
+                onClicked: applySort("title")
+                Row {
+                    anchors { fill: parent; leftMargin: Theme.paddingLarge; rightMargin: Theme.paddingLarge }
+                    spacing: Theme.paddingSmall
+                    Label {
+                        width: parent.width - arrowLabel2.width - Theme.paddingSmall
+                        text: qsTr("По названию")
+                        color: sortField === "title" ? Theme.highlightColor : Theme.primaryColor
+                        font.pixelSize: Theme.fontSizeSmall
+                        truncationMode: TruncationMode.Fade
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                    Label {
+                        id: arrowLabel2
+                        text: sortField === "title" ? (sortDir === "asc" ? "▲" : "▼") : ""
+                        color: Theme.secondaryColor
+                        font.pixelSize: Theme.fontSizeSmall
+                        anchors.verticalCenter: parent.verticalCenter
+                        visible: sortField === "title"
+                    }
+                }
+            }
+
+            BackgroundItem {
+                width: parent.width
+                height: Theme.itemSizeSmall
+                onClicked: applySort("duration")
+                Row {
+                    anchors { fill: parent; leftMargin: Theme.paddingLarge; rightMargin: Theme.paddingLarge }
+                    spacing: Theme.paddingSmall
+                    Label {
+                        width: parent.width - arrowLabel3.width - Theme.paddingSmall
+                        text: qsTr("По длительности")
+                        color: sortField === "duration" ? Theme.highlightColor : Theme.primaryColor
+                        font.pixelSize: Theme.fontSizeSmall
+                        truncationMode: TruncationMode.Fade
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                    Label {
+                        id: arrowLabel3
+                        text: sortField === "duration" ? (sortDir === "asc" ? "▲" : "▼") : ""
+                        color: Theme.secondaryColor
+                        font.pixelSize: Theme.fontSizeSmall
+                        anchors.verticalCenter: parent.verticalCenter
+                        visible: sortField === "duration"
+                    }
+                }
+            }
+
+            BackgroundItem {
+                width: parent.width
+                height: Theme.itemSizeSmall
+                onClicked: applySort("size")
+                Row {
+                    anchors { fill: parent; leftMargin: Theme.paddingLarge; rightMargin: Theme.paddingLarge }
+                    spacing: Theme.paddingSmall
+                    Label {
+                        width: parent.width - arrowLabel4.width - Theme.paddingSmall
+                        text: qsTr("По весу")
+                        color: sortField === "size" ? Theme.highlightColor : Theme.primaryColor
+                        font.pixelSize: Theme.fontSizeSmall
+                        truncationMode: TruncationMode.Fade
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                    Label {
+                        id: arrowLabel4
+                        text: sortField === "size" ? (sortDir === "asc" ? "▲" : "▼") : ""
+                        color: Theme.secondaryColor
+                        font.pixelSize: Theme.fontSizeSmall
+                        anchors.verticalCenter: parent.verticalCenter
+                        visible: sortField === "size"
+                    }
+                }
+            }
+        }
+    }
+
+    // Background MouseArea to dismiss sort menu
+    MouseArea {
+        id: sortMenuDismiss
+        anchors.fill: parent
+        visible: sortMenu.visible
+        z: 100
+        onClicked: sortMenu.visible = false
+    }
+
     // Normal header — fixed overlay (visible in normal mode)
     Rectangle {
         id: normalHeader
@@ -171,6 +323,15 @@ Page {
             height: 1
             color: Theme.secondaryColor
             opacity: 0.3
+        }
+
+        IconButton {
+            id: sortButton
+            anchors { right: searchHeaderButton.left; rightMargin: Theme.paddingSmall; verticalCenter: parent.verticalCenter }
+            width: Theme.iconSizeMedium
+            height: Theme.iconSizeMedium
+            icon.source: "image://theme/icon-m-down"
+            onClicked: mainPage.openSortMenu()
         }
 
         IconButton {
@@ -226,8 +387,19 @@ Page {
 
         // Search and about buttons (same as normal mode, left of select-all)
         IconButton {
+            id: sortButton2
+            anchors { right: searchHeaderButton2.left; rightMargin: Theme.paddingSmall; verticalCenter: parent.verticalCenter }
+            width: Theme.iconSizeMedium
+            height: Theme.iconSizeMedium
+            icon.source: "image://theme/icon-m-down"
+            onClicked: mainPage.openSortMenu()
+        }
+
+        IconButton {
             id: searchHeaderButton2
             anchors { right: aboutHeaderButton2.left; rightMargin: Theme.paddingSmall; verticalCenter: parent.verticalCenter }
+            width: Theme.iconSizeMedium
+            height: Theme.iconSizeMedium
             icon.source: "image://theme/icon-m-search"
             icon.color: searchField.text.length > 0 ? Theme.highlightColor : Theme.secondaryColor
             onClicked: {
@@ -239,6 +411,8 @@ Page {
         IconButton {
             id: aboutHeaderButton2
             anchors { right: selectAllButton.left; rightMargin: Theme.paddingSmall; verticalCenter: parent.verticalCenter }
+            width: Theme.iconSizeMedium
+            height: Theme.iconSizeMedium
             icon.source: "image://theme/icon-m-about"
             onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
         }
@@ -451,8 +625,8 @@ Page {
 
                 ViewPlaceholder {
                     enabled: filteredModel.count === 0
-                    text: qsTr("Нет заметок")
-                    hintText: qsTr("Нажмите на микрофон, чтобы начать запись")
+                    text: searchField.text.length > 0 ? qsTr("Ничего не найдено") : qsTr("Нет заметок")
+                    hintText: searchField.text.length > 0 ? "" : qsTr("Нажмите на микрофон, чтобы начать запись")
                 }
             }
         }

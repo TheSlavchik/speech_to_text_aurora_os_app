@@ -49,10 +49,7 @@ Page {
             width: parent.width
 
             PageHeader {
-                title: SpeechRecognizer.recording ? qsTr("Запись") :
-                       SpeechRecognizer.finalizing ? qsTr("Расшифровка") :
-                       SpeechRecognizer.loading ? qsTr("Загрузка модели") :
-                       qsTr("Готов к записи")
+                title: qsTr("")
             }
 
             // Signal level visualization

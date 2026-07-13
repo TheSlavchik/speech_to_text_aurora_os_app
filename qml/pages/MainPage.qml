@@ -691,7 +691,7 @@ Page {
 
     Component {
         id: headerComponent
-        Item { width: parent.width; height: Theme.paddingSmall }
+        Item { width: parent.width; height: filteredModel.count > 0 ? -1 : 0 }
     }
 
     Component {
@@ -701,6 +701,15 @@ Page {
             width: parent.width
             height: noteColumn.height + 2 * Theme.paddingMedium
             RemorseItem { id: remorse }
+
+            // Top separator line (only for first note)
+            Rectangle {
+                anchors { left: parent.left; right: parent.right; top: parent.top }
+                height: 1
+                color: Theme.secondaryColor
+                opacity: 0.15
+                visible: index === 0
+            }
 
             function removeNote() {
                 remorse.execute(delegateItem, qsTr("Удаление заметки"), function() {
@@ -787,6 +796,14 @@ Page {
 
             onPressAndHold: {
                 if (!mainPage.selectionMode) mainPage.enterSelectionMode(noteId)
+            }
+
+            // Separator line
+            Rectangle {
+                anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
+                height: 1
+                color: Theme.secondaryColor
+                opacity: 0.15
             }
         }
     }

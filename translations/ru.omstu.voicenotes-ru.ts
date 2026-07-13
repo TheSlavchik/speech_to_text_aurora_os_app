@@ -76,77 +76,47 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="132"/>
+        <location filename="../qml/pages/MainPage.qml" line="143"/>
         <source>Переименовать заметку</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="136"/>
+        <location filename="../qml/pages/MainPage.qml" line="147"/>
         <source>Название заметки</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="202"/>
+        <location filename="../qml/pages/MainPage.qml" line="222"/>
         <source>Выбрано: %1</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="265"/>
-        <source>Загрузка модели распознавания речи...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/MainPage.qml" line="305"/>
-        <source>Идёт запись...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/MainPage.qml" line="321"/>
+        <location filename="../qml/pages/MainPage.qml" line="347"/>
         <source>Поиск по заметкам...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="338"/>
-        <source>О программе</source>
+        <location filename="../qml/pages/MainPage.qml" line="390"/>
+        <source>Загрузка модели распознавания речи...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="342"/>
-        <source>Скрыть поиск</source>
+        <location filename="../qml/pages/MainPage.qml" line="430"/>
+        <source>Идёт запись...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="342"/>
-        <source>Поиск</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/MainPage.qml" line="348"/>
+        <location filename="../qml/pages/MainPage.qml" line="454"/>
         <source>Нет заметок</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="349"/>
+        <location filename="../qml/pages/MainPage.qml" line="455"/>
         <source>Нажмите на микрофон, чтобы начать запись</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="411"/>
-        <source>Действие 1 (заглушка)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/MainPage.qml" line="412"/>
-        <source>Действие 2 (заглушка)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/MainPage.qml" line="413"/>
-        <source>Действие 3 (заглушка)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/MainPage.qml" line="432"/>
+        <location filename="../qml/pages/MainPage.qml" line="527"/>
         <source>Удаление заметки</source>
         <translation type="unfinished"></translation>
     </message>
@@ -219,67 +189,62 @@
 <context>
     <name>RecordingPage</name>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="27"/>
-        <source>Речь не распознана. Попробуйте записать ещё раз.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="57"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="52"/>
         <source>Запись</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="58"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="53"/>
         <source>Расшифровка</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="59"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="54"/>
         <source>Загрузка модели</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="60"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="55"/>
         <source>Готов к записи</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="91"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="86"/>
         <source>MIC</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="216"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="211"/>
         <source>Завершаем расшифровку...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="217"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="212"/>
         <source>Распознавание речи...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="256"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="251"/>
         <source>Загрузка модели распознавания...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="257"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="252"/>
         <source>Модель распознавания недоступна</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="258"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="253"/>
         <source>Ожидайте завершения расшифровки</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="259"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="254"/>
         <source>Нажмите на микрофон, чтобы начать запись</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="34"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="29"/>
         <source>Запись от %1</source>
         <translation type="unfinished"></translation>
     </message>

@@ -70,12 +70,12 @@ Page {
     function renameSelected() {
         if (selectedIds.length !== 1) return
         var noteId = selectedIds[0]
-        for (var j = 0; j < filteredModel.count; j++) {
-            var note = filteredModel.get(j)
+        for (var j = 0; j < notesModel.count; j++) {
+            var note = notesModel.get(j)
             if (note.noteId === noteId) {
-                renameDialog.noteId = noteId
-                renameDialog.nameField.text = note.title
-                renameDialog.open()
+                var dlg = renameDialogComponent.createObject(mainPage, { "noteId": noteId })
+                dlg.nameField.text = note.title
+                dlg.open()
                 return
             }
         }
@@ -107,6 +107,14 @@ Page {
         filterNotes(searchField.text)
     }
 
+    Timer {
+        id: searchScrollTimer
+        interval: 0
+        onTriggered: {
+            searchFlickable.contentX = Math.max(0, searchFlickable.contentWidth - searchFlickable.width)
+        }
+    }
+
     Component.onCompleted: {
         modelLoaded = true
         reloadNotes()
@@ -122,25 +130,29 @@ Page {
         onFinished: reloadNotes()
     }
 
-    // --- Rename dialog ---
-    Dialog {
-        id: renameDialog
-        property int noteId: -1
-        Column {
-            width: parent.width
-            spacing: Theme.paddingMedium
-            DialogHeader { title: qsTr("Переименовать заметку") }
-            TextField {
-                id: nameField
+    // --- Rename dialog component ---
+    Component {
+        id: renameDialogComponent
+        Dialog {
+            property int noteId: -1
+            property alias nameField: nameField
+            allowedOrientations: Orientation.All
+            Column {
                 width: parent.width
-                placeholderText: qsTr("Название заметки")
+                spacing: Theme.paddingMedium
+                DialogHeader { title: qsTr("Переименовать заметку") }
+                TextField {
+                    id: nameField
+                    width: parent.width
+                    placeholderText: qsTr("Название заметки")
+                }
             }
-        }
-        onAccepted: {
-            if (nameField.text.trim().length > 0 && noteId >= 0) {
-                Db.updateNoteTitle(noteId, nameField.text.trim())
-                exitSelectionMode()
-                reloadNotes()
+            onAccepted: {
+                if (nameField.text.trim().length > 0 && noteId >= 0) {
+                    Db.updateNoteTitle(noteId, nameField.text.trim())
+                    exitSelectionMode()
+                    reloadNotes()
+                }
             }
         }
     }
@@ -154,8 +166,6 @@ Page {
         visible: !selectionMode
         z: 10
 
-        MouseArea { anchors.fill: parent }
-
         Rectangle {
             anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
             height: 1
@@ -164,6 +174,18 @@ Page {
         }
 
         IconButton {
+            id: searchHeaderButton
+            anchors { right: aboutHeaderButton.left; rightMargin: Theme.paddingSmall; verticalCenter: parent.verticalCenter }
+            icon.source: "image://theme/icon-m-search"
+            icon.color: searchField.text.length > 0 ? Theme.highlightColor : Theme.secondaryColor
+            onClicked: {
+                searchRow.visible = !searchRow.visible
+                if (!searchRow.visible) searchField.focus = false
+            }
+        }
+
+        IconButton {
+            id: aboutHeaderButton
             objectName: "aboutButton"
             anchors { right: parent.right; rightMargin: Theme.paddingMedium; verticalCenter: parent.verticalCenter }
             icon.source: "image://theme/icon-m-about"
@@ -179,8 +201,6 @@ Page {
         color: "transparent"
         visible: selectionMode
         z: 10
-
-        MouseArea { anchors.fill: parent }
 
         Rectangle {
             anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
@@ -202,6 +222,25 @@ Page {
             text: qsTr("Выбрано: %1").arg(selectedIds.length)
             color: Theme.primaryColor
             font.pixelSize: Theme.fontSizeSmall
+        }
+
+        // Search and about buttons (same as normal mode, left of select-all)
+        IconButton {
+            id: searchHeaderButton2
+            anchors { right: aboutHeaderButton2.left; rightMargin: Theme.paddingSmall; verticalCenter: parent.verticalCenter }
+            icon.source: "image://theme/icon-m-search"
+            icon.color: searchField.text.length > 0 ? Theme.highlightColor : Theme.secondaryColor
+            onClicked: {
+                searchRow.visible = !searchRow.visible
+                if (!searchRow.visible) searchField.focus = false
+            }
+        }
+
+        IconButton {
+            id: aboutHeaderButton2
+            anchors { right: selectAllButton.left; rightMargin: Theme.paddingSmall; verticalCenter: parent.verticalCenter }
+            icon.source: "image://theme/icon-m-about"
+            onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
         }
 
         Item {
@@ -233,10 +272,96 @@ Page {
         }
     }
 
+    // Search header — fixed overlay
+    Rectangle {
+        id: searchHeader
+        anchors { top: normalHeader.visible ? normalHeader.bottom : selectionHeader.bottom; left: parent.left; right: parent.right }
+        height: searchRow.visible ? Theme.itemSizeMedium : 0
+        color: "transparent"
+        visible: true
+        z: 10
+        clip: true
+
+        Rectangle {
+            anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
+            height: 1
+            color: Theme.secondaryColor
+            opacity: 0.3
+        }
+
+        Row {
+            id: searchRow
+            width: parent.width
+            visible: false
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: Theme.paddingSmall
+
+            IconButton {
+                id: clearSearchButton
+                anchors.verticalCenter: parent.verticalCenter
+                icon.source: "image://theme/icon-m-clear"
+                enabled: searchField.text.length > 0
+                opacity: enabled ? 1.0 : 0.4
+                onClicked: searchField.text = ""
+            }
+
+            Rectangle {
+                width: parent.width - clearSearchButton.width - Theme.paddingSmall
+                height: Theme.itemSizeSmall
+                color: "transparent"
+                border.color: "transparent"
+                anchors.verticalCenter: parent.verticalCenter
+                clip: true
+
+                Flickable {
+                    id: searchFlickable
+                    anchors.fill: parent
+                    contentWidth: searchField.x + searchField.width
+                    contentHeight: parent.height
+                    interactive: contentWidth > width
+                    boundsBehavior: Flickable.StopAtBounds
+
+                    TextInput {
+                        id: searchField
+                        x: 4 * Theme.paddingSmall
+                        width: Math.max(searchFlickable.width - 4 * Theme.paddingSmall, searchField.contentWidth + 3 * Theme.paddingLarge)
+                        height: parent.height
+                        verticalAlignment: TextInput.AlignVCenter
+                        color: Theme.primaryColor
+                        font.pixelSize: Theme.fontSizeMedium
+                        onTextChanged: {
+                            filterNotes(text)
+                            if (cursorPosition === text.length) {
+                                searchScrollTimer.start()
+                            }
+                        }
+                    }
+                }
+
+                Label {
+                    anchors {
+                        fill: parent
+                        leftMargin: 4 * Theme.paddingSmall
+                    }
+                    verticalAlignment: Text.AlignVCenter
+                    text: qsTr("Поиск по заметкам...")
+                    color: Theme.secondaryColor
+                    font.pixelSize: Theme.fontSizeMedium
+                    visible: searchField.text.length === 0
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: searchField.forceActiveFocus()
+                    }
+                }
+            }
+        }
+    }
+
     SilicaFlickable {
         id: flickable
         anchors {
-            top: normalHeader.visible ? normalHeader.bottom : selectionHeader.bottom
+            top: searchHeader.bottom
             left: parent.left
             right: parent.right
             bottom: bottomBar.visible ? bottomBar.top : parent.bottom
@@ -315,14 +440,6 @@ Page {
                 }
             }
 
-            SearchField {
-                id: searchField
-                width: parent.width
-                placeholderText: qsTr("Поиск по заметкам...")
-                visible: false
-                onTextChanged: filterNotes(text)
-            }
-
             SilicaListView {
                 id: notesListView
                 width: parent.width
@@ -332,17 +449,6 @@ Page {
                 spacing: 0
                 header: headerComponent
 
-                PullDownMenu {
-                    id: pullDownMenu
-                    MenuItem {
-                        text: qsTr("О программе")
-                        onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
-                    }
-                    MenuItem {
-                        text: searchField.visible ? qsTr("Скрыть поиск") : qsTr("Поиск")
-                        onClicked: searchField.visible = !searchField.visible
-                    }
-                }
                 ViewPlaceholder {
                     enabled: filteredModel.count === 0
                     text: qsTr("Нет заметок")
@@ -362,8 +468,6 @@ Page {
         visible: selectionMode
         z: 10
 
-        MouseArea { anchors.fill: parent }
-
         Rectangle {
             anchors { left: parent.left; right: parent.right; top: parent.top }
             height: 1
@@ -371,49 +475,40 @@ Page {
             opacity: 0.3
         }
 
-        Row {
-            anchors { fill: parent; leftMargin: Theme.paddingMedium; rightMargin: Theme.paddingMedium }
-            spacing: Theme.paddingMedium
-            IconButton {
-                id: shareButton
-                anchors.verticalCenter: parent.verticalCenter
-                icon.source: "image://theme/icon-m-share"
-                enabled: selectedIds.length > 0
-                opacity: enabled ? 1.0 : 0.4
+        BackgroundItem {
+            id: deleteButton
+            anchors { right: parent.right; rightMargin: Theme.paddingMedium; verticalCenter: parent.verticalCenter }
+            width: Theme.iconSizeMedium
+            height: Theme.iconSizeMedium
+            enabled: selectedIds.length > 0
+            opacity: enabled ? 1.0 : 0.4
+
+            Image {
+                anchors.centerIn: parent
+                source: "image://theme/icon-m-delete"
             }
-            IconButton {
-                id: renameButton
-                anchors.verticalCenter: parent.verticalCenter
-                icon.source: "image://theme/icon-m-edit"
-                enabled: selectedIds.length === 1
-                opacity: enabled ? 1.0 : 0.4
-                onClicked: renameSelected()
+
+            onClicked: deleteSelected()
+        }
+
+        BackgroundItem {
+            id: renameButton
+            anchors { right: deleteButton.left; rightMargin: Theme.paddingMedium; verticalCenter: parent.verticalCenter }
+            width: Theme.iconSizeMedium
+            height: Theme.iconSizeMedium
+            enabled: selectedIds.length === 1
+            opacity: enabled ? 1.0 : 0.4
+
+            Image {
+                anchors.centerIn: parent
+                source: "image://theme/icon-m-edit"
             }
-            IconButton {
-                id: deleteButton
-                anchors.verticalCenter: parent.verticalCenter
-                icon.source: "image://theme/icon-m-delete"
-                enabled: selectedIds.length > 0
-                opacity: enabled ? 1.0 : 0.4
-                onClicked: deleteSelected()
-            }
-            IconButton {
-                id: moreButton
-                anchors.verticalCenter: parent.verticalCenter
-                icon.source: "image://theme/icon-m-more"
-                onClicked: moreMenu.open(moreButton)
-            }
+
+            onClicked: renameSelected()
         }
     }
 
-    ContextMenu {
-        id: moreMenu
-        MenuItem { text: qsTr("Действие 1 (заглушка)") }
-        MenuItem { text: qsTr("Действие 2 (заглушка)") }
-        MenuItem { text: qsTr("Действие 3 (заглушка)") }
-    }
-
-    RemorseItem { id: remorseDelete }
+    RemorseItem { id: remorseDelete; width: parent.width; height: Theme.itemSizeMedium }
 
     Component {
         id: headerComponent
@@ -435,6 +530,7 @@ Page {
                 })
             }
 
+            // Selection check-box (right)
             Item {
                 id: checkBox
                 anchors {
@@ -444,12 +540,6 @@ Page {
                 }
                 width: Theme.iconSizeMedium
                 height: Theme.iconSizeMedium
-
-                Image {
-                    anchors.fill: parent
-                    source: "image://theme/icon-m-play"
-                    visible: !mainPage.selectionMode
-                }
 
                 Rectangle {
                     anchors.fill: parent
@@ -472,8 +562,6 @@ Page {
                     onClicked: {
                         if (mainPage.selectionMode) {
                             mainPage.toggleSelection(noteId)
-                        } else {
-                            console.log("Playback: note", noteId)
                         }
                     }
                 }
@@ -497,6 +585,7 @@ Page {
                     width: parent.width; spacing: Theme.paddingMedium
                     Label { text: date; color: Theme.secondaryColor; font.pixelSize: Theme.fontSizeExtraSmall }
                     Label { text: duration; color: Theme.secondaryColor; font.pixelSize: Theme.fontSizeExtraSmall }
+                    Label { text: fileSize; color: Theme.secondaryColor; font.pixelSize: Theme.fontSizeExtraSmall }
                 }
                 Item { width: 1; height: Theme.paddingSmall }
                 Label {

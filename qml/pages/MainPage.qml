@@ -540,6 +540,7 @@ Page {
             right: parent.right
             bottom: bottomBar.visible ? bottomBar.top : parent.bottom
         }
+        boundsBehavior: Flickable.DragOverBounds
         clip: true
         contentHeight: column.height
 
@@ -622,6 +623,10 @@ Page {
                 delegate: noteDelegate
                 spacing: 0
                 header: headerComponent
+                footer: Item {
+                    width: parent.width
+                    height: recordButton.height + Theme.paddingLarge * 2
+                }
 
                 ViewPlaceholder {
                     enabled: filteredModel.count === 0
@@ -788,16 +793,16 @@ Page {
 
     Label { id: emptyLabel; visible: false }
 
-    // Floating record button – hidden in selection mode
+    // Floating record button
     Rectangle {
         id: recordButton
         anchors {
             right: parent.right; bottom: parent.bottom
-            rightMargin: Theme.paddingLarge; bottomMargin: Theme.paddingLarge
+            rightMargin: Theme.paddingLarge
+            bottomMargin: Theme.paddingLarge + (bottomBar.visible ? bottomBar.height : 0)
         }
         width: Theme.itemSizeLarge; height: Theme.itemSizeLarge
         radius: width / 2; color: Theme.highlightColor
-        visible: !selectionMode
 
         IconButton {
             anchors.centerIn: parent

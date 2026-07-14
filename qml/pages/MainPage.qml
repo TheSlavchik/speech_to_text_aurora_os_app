@@ -122,7 +122,7 @@ Page {
     function openSortMenu() {
         var btn = selectionMode ? sortButton2 : sortButton
         var pos = btn.mapToItem(mainPage, 0, 0)
-        sortMenu.y = normalHeader.visible ? normalHeader.height : selectionHeader.height
+        sortMenu.y = selectionMode ? mainPage.height - bottomBar.height - (4 * Theme.itemSizeSmall + Theme.paddingMedium * 2) : normalHeader.height
         sortMenu.x = Math.max(0, pos.x + btn.width - sortMenu.width)
         sortMenu.visible = true
     }
@@ -175,6 +175,49 @@ Page {
                 }
             }
         }
+    }
+
+    // --- More dropdown menu ---
+    Rectangle {
+        id: moreMenu
+        visible: false
+        z: 101
+        width: Theme.itemSizeLarge * 3
+        height: moreColumn.height + Theme.paddingMedium * 2
+        color: Theme.overlayBackgroundColor
+        radius: 12
+        border.color: Theme.rgba(Theme.secondaryColor, 0.3)
+        border.width: 1
+
+        Column {
+            id: moreColumn
+            width: parent.width
+            anchors.centerIn: parent
+
+            BackgroundItem {
+                width: parent.width
+                height: Theme.itemSizeSmall
+                onClicked: {
+                    moreMenu.visible = false
+                    pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
+                }
+                Label {
+                    anchors { left: parent.left; leftMargin: Theme.paddingLarge; verticalCenter: parent.verticalCenter }
+                    text: qsTr("О программе")
+                    color: parent.down ? Theme.highlightColor : Theme.primaryColor
+                    font.pixelSize: Theme.fontSizeSmall
+                }
+            }
+        }
+    }
+
+    // Background MouseArea to dismiss more menu
+    MouseArea {
+        id: moreMenuDismiss
+        anchors.fill: parent
+        visible: moreMenu.visible
+        z: 100
+        onClicked: moreMenu.visible = false
     }
 
     // --- Sort dropdown menu ---
@@ -336,7 +379,7 @@ Page {
 
         IconButton {
             id: searchHeaderButton
-            anchors { right: aboutHeaderButton.left; rightMargin: Theme.paddingSmall; verticalCenter: parent.verticalCenter }
+            anchors { right: moreHeaderButton.left; rightMargin: Theme.paddingSmall; verticalCenter: parent.verticalCenter }
             icon.source: "image://theme/icon-m-search"
             icon.color: searchField.text.length > 0 ? Theme.highlightColor : Theme.secondaryColor
             onClicked: {
@@ -346,11 +389,17 @@ Page {
         }
 
         IconButton {
-            id: aboutHeaderButton
-            objectName: "aboutButton"
+            id: moreHeaderButton
             anchors { right: parent.right; rightMargin: Theme.paddingMedium; verticalCenter: parent.verticalCenter }
-            icon.source: "image://theme/icon-m-about"
-            onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
+            width: Theme.iconSizeMedium
+            height: Theme.iconSizeMedium
+            icon.source: "image://theme/icon-m-more"
+            onClicked: {
+                var pos = moreHeaderButton.mapToItem(mainPage, 0, 0)
+                moreMenu.y = normalHeader.height
+                moreMenu.x = Math.max(0, pos.x + moreHeaderButton.width - moreMenu.width)
+                moreMenu.visible = !moreMenu.visible
+            }
         }
     }
 
@@ -383,38 +432,6 @@ Page {
             text: qsTr("Выбрано: %1").arg(selectedIds.length)
             color: Theme.primaryColor
             font.pixelSize: Theme.fontSizeSmall
-        }
-
-        // Search and about buttons (same as normal mode, left of select-all)
-        IconButton {
-            id: sortButton2
-            anchors { right: searchHeaderButton2.left; rightMargin: Theme.paddingSmall; verticalCenter: parent.verticalCenter }
-            width: Theme.iconSizeMedium
-            height: Theme.iconSizeMedium
-            icon.source: "image://theme/icon-m-down"
-            onClicked: mainPage.openSortMenu()
-        }
-
-        IconButton {
-            id: searchHeaderButton2
-            anchors { right: aboutHeaderButton2.left; rightMargin: Theme.paddingSmall; verticalCenter: parent.verticalCenter }
-            width: Theme.iconSizeMedium
-            height: Theme.iconSizeMedium
-            icon.source: "image://theme/icon-m-search"
-            icon.color: searchField.text.length > 0 ? Theme.highlightColor : Theme.secondaryColor
-            onClicked: {
-                searchRow.visible = !searchRow.visible
-                if (!searchRow.visible) searchField.focus = false
-            }
-        }
-
-        IconButton {
-            id: aboutHeaderButton2
-            anchors { right: selectAllButton.left; rightMargin: Theme.paddingSmall; verticalCenter: parent.verticalCenter }
-            width: Theme.iconSizeMedium
-            height: Theme.iconSizeMedium
-            icon.source: "image://theme/icon-m-about"
-            onClicked: pageStack.push(Qt.resolvedUrl("AboutPage.qml"))
         }
 
         Item {
@@ -654,9 +671,24 @@ Page {
             opacity: 0.3
         }
 
+        // Order right to left: More, Delete, Rename, Search, Sort
+        IconButton {
+            id: moreHeaderButton2
+            anchors { right: parent.right; rightMargin: Theme.paddingMedium; verticalCenter: parent.verticalCenter }
+            width: Theme.iconSizeMedium
+            height: Theme.iconSizeMedium
+            icon.source: "image://theme/icon-m-more"
+            onClicked: {
+                var pos = moreHeaderButton2.mapToItem(mainPage, 0, 0)
+                moreMenu.y = mainPage.height - bottomBar.height - (Theme.itemSizeSmall + Theme.paddingMedium * 2)
+                moreMenu.x = Math.max(0, pos.x + moreHeaderButton2.width - moreMenu.width)
+                moreMenu.visible = !moreMenu.visible
+            }
+        }
+
         BackgroundItem {
             id: deleteButton
-            anchors { right: parent.right; rightMargin: Theme.paddingMedium; verticalCenter: parent.verticalCenter }
+            anchors { right: moreHeaderButton2.left; rightMargin: Theme.paddingMedium; verticalCenter: parent.verticalCenter }
             width: Theme.iconSizeMedium
             height: Theme.iconSizeMedium
             enabled: selectedIds.length > 0
@@ -684,6 +716,28 @@ Page {
             }
 
             onClicked: renameSelected()
+        }
+
+        IconButton {
+            id: searchHeaderButton2
+            anchors { right: renameButton.left; rightMargin: Theme.paddingMedium; verticalCenter: parent.verticalCenter }
+            width: Theme.iconSizeMedium
+            height: Theme.iconSizeMedium
+            icon.source: "image://theme/icon-m-search"
+            icon.color: searchField.text.length > 0 ? Theme.highlightColor : Theme.secondaryColor
+            onClicked: {
+                searchRow.visible = !searchRow.visible
+                if (!searchRow.visible) searchField.focus = false
+            }
+        }
+
+        IconButton {
+            id: sortButton2
+            anchors { right: searchHeaderButton2.left; rightMargin: Theme.paddingSmall; verticalCenter: parent.verticalCenter }
+            width: Theme.iconSizeMedium
+            height: Theme.iconSizeMedium
+            icon.source: "image://theme/icon-m-down"
+            onClicked: mainPage.openSortMenu()
         }
     }
 

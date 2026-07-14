@@ -14,13 +14,21 @@ function getDatabase() {
                       + "text TEXT, "
                       + "duration TEXT, "
                       + "audio TEXT, "
+                      + "tags TEXT DEFAULT '', "
                       + "created INTEGER)")
         // Add file_size column if upgrading from older schema
         try {
             tx.executeSql("ALTER TABLE notes ADD COLUMN file_size INTEGER DEFAULT 0")
-        } catch (e) {
-            // Column already exists — ignore
-        }
+        } catch (e) { /* column already exists */ }
+        // Add tags column if upgrading from older schema
+        try {
+            tx.executeSql("ALTER TABLE notes ADD COLUMN tags TEXT DEFAULT ''")
+        } catch (e) { /* column already exists */ }
+        // Create tags table
+        tx.executeSql("CREATE TABLE IF NOT EXISTS tags ("
+                      + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                      + "name TEXT UNIQUE, "
+                      + "created INTEGER)")
     })
     return db
 }
@@ -35,15 +43,9 @@ function makePreview(text) {
 
 // Formats bytes into human-readable size (KB or MB).
 function formatFileSize(bytes) {
-    if (!bytes || bytes === 0) {
-        return "0 KB"
-    }
-    if (bytes >= 1048576) {
-        return (bytes / 1048576.0).toFixed(1) + " MB"
-    }
-    if (bytes >= 1024) {
-        return Math.round(bytes / 1024.0) + " KB"
-    }
+    if (!bytes || bytes === 0) return "0 KB"
+    if (bytes >= 1048576) return (bytes / 1048576.0).toFixed(1) + " MB"
+    if (bytes >= 1024) return Math.round(bytes / 1024.0) + " KB"
     return bytes + " B"
 }
 
@@ -58,8 +60,6 @@ function durationToSeconds(duration) {
 }
 
 // Load all notes into the given ListModel.
-// sortMode: "date" (default), "title", "duration", "size"
-// sortDir: "desc" (default) or "asc"
 function loadNotes(model, sortMode, sortDir) {
     var mode = sortMode || "date"
     var dir = sortDir || "desc"
@@ -71,18 +71,16 @@ function loadNotes(model, sortMode, sortDir) {
     } else if (mode === "title") {
         order = dir === "asc" ? "ORDER BY title ASC" : "ORDER BY title DESC"
     } else if (mode === "duration") {
-        // Sort by duration in JS
         order = "ORDER BY created DESC"
         sortInJS = true
     } else if (mode === "size") {
-        // Sort by file_size in JS
         order = "ORDER BY created DESC"
         sortInJS = true
     }
 
     var db = getDatabase()
     db.readTransaction(function(tx) {
-        var rs = tx.executeSql("SELECT id, title, date, text, duration, audio, file_size "
+        var rs = tx.executeSql("SELECT id, title, date, text, duration, audio, file_size, tags "
                                + "FROM notes " + order)
         var rows = []
         for (var i = 0; i < rs.rows.length; i++) {
@@ -106,6 +104,7 @@ function loadNotes(model, sortMode, sortDir) {
         model.clear()
         for (var j = 0; j < rows.length; j++) {
             var row = rows[j]
+            var parts = (row.tags || "").split("|")
             model.append({
                 "noteId": row.id,
                 "title": row.title,
@@ -114,7 +113,8 @@ function loadNotes(model, sortMode, sortDir) {
                 "preview": makePreview(row.text),
                 "duration": row.duration,
                 "audio": row.audio,
-                "fileSize": formatFileSize(row.file_size || 0)
+                "fileSize": formatFileSize(row.file_size || 0),
+                "tags": row.tags || ""
             })
         }
     })
@@ -151,26 +151,83 @@ function notesCount() {
         }
     })
     return count
-    }
+}
 
-    function deleteNotes(ids) {
-        if (!ids || ids.length === 0) return 0
-        var db = getDatabase()
-        var count = 0
-        db.transaction(function(tx) {
-            var placeholders = ids.map(function() { return "?" }).join(",")
-            var r = tx.executeSql("DELETE FROM notes WHERE id IN (" + placeholders + ")", ids)
-            count = r.rowsAffected
-        })
-        return count
-    }
+function deleteNotes(ids) {
+    if (!ids || ids.length === 0) return 0
+    var db = getDatabase()
+    var count = 0
+    db.transaction(function(tx) {
+        var placeholders = ids.map(function() { return "?" }).join(",")
+        var r = tx.executeSql("DELETE FROM notes WHERE id IN (" + placeholders + ")", ids)
+        count = r.rowsAffected
+    })
+    return count
+}
 
-    function updateNoteTitle(id, newTitle) {
-        var db = getDatabase()
-        var ok = false
-        db.transaction(function(tx) {
-            var r = tx.executeSql("UPDATE notes SET title = ? WHERE id = ?", [newTitle, id])
-            ok = r.rowsAffected > 0
-        })
-        return ok
+function updateNoteTitle(id, newTitle) {
+    var db = getDatabase()
+    var ok = false
+    db.transaction(function(tx) {
+        var r = tx.executeSql("UPDATE notes SET title = ? WHERE id = ?", [newTitle, id])
+        ok = r.rowsAffected > 0
+    })
+    return ok
+}
+
+// Tag functions
+
+function updateNoteTags(noteId, tags) {
+    var db = getDatabase()
+    // Remove duplicates
+    var seen = {}
+    var unique = []
+    for (var i = 0; i < tags.length; i++) {
+        var t = tags[i].trim()
+        if (t.length > 0 && !seen[t]) {
+            seen[t] = true
+            unique.push(t)
+        }
     }
+    var tagStr = unique.join("|")
+    db.transaction(function(tx) {
+        tx.executeSql("UPDATE notes SET tags = ? WHERE id = ?", [tagStr, noteId])
+        // Insert new tags
+        for (var i = 0; i < tags.length; i++) {
+            var t = tags[i].trim()
+            if (t.length > 0) {
+                tx.executeSql("INSERT OR IGNORE INTO tags (name, created) VALUES (?, ?)", [t, Date.now()])
+            }
+        }
+        // Rebuild tags table from current notes to remove orphaned tags
+        tx.executeSql("DELETE FROM tags")
+        var rsAll = tx.executeSql("SELECT tags FROM notes WHERE tags IS NOT NULL AND tags <> ''")
+        var allTagsSet = {}
+        for (var k = 0; k < rsAll.rows.length; k++) {
+            var rowTags = rsAll.rows.item(k).tags
+            var arr = rowTags.split("|")
+            for (var a = 0; a < arr.length; a++) {
+                var tag = arr[a].trim()
+                if (tag.length > 0) {
+                    allTagsSet[tag] = true
+                }
+            }
+        }
+        var uniqueTags = Object.keys(allTagsSet)
+        for (var u = 0; u < uniqueTags.length; u++) {
+            tx.executeSql("INSERT OR IGNORE INTO tags (name, created) VALUES (?, ?)", [uniqueTags[u], Date.now()])
+        }
+    })
+}
+
+function getAllTags() {
+    var db = getDatabase()
+    var tagList = []
+    db.readTransaction(function(tx) {
+        var rs = tx.executeSql("SELECT name FROM tags ORDER BY name ASC")
+        for (var i = 0; i < rs.rows.length; i++) {
+            tagList.push(rs.rows.item(i).name)
+        }
+    })
+    return tagList
+}

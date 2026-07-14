@@ -1,5 +1,6 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
+import Nemo.Notifications 1.0
 import ru.omstu.voicenotes 1.0
 import "../Database.js" as Db
 
@@ -12,6 +13,8 @@ Page {
     property bool isRecording: false
     property string sortField: "date"
     property string sortDir: "desc"
+    property var activeFilterTags: []
+    property var filterTagList: []
 
     // --- Multi-selection state ---
     property bool selectionMode: false
@@ -88,25 +91,50 @@ Page {
 
     function filterNotes(query) {
         filteredModel.clear()
-        if (query === "") {
-            for (var i = 0; i < notesModel.count; i++) {
-                filteredModel.append(notesModel.get(i))
+        for (var j = 0; j < notesModel.count; j++) {
+            var note = notesModel.get(j)
+            // Tag filter
+            if (activeFilterTags.length > 0) {
+                var noteTags = (note.tags || "").split("|")
+                var found = false
+                for (var i = 0; i < activeFilterTags.length; i++) {
+                    if (noteTags.indexOf(activeFilterTags[i]) >= 0) {
+                        found = true
+                        break
+                    }
+                }
+                if (!found) continue
             }
-        } else {
-            var lowerQuery = query.toLowerCase()
-            for (var j = 0; j < notesModel.count; j++) {
-                var note = notesModel.get(j)
-                if (note.title.toLowerCase().indexOf(lowerQuery) !== -1 ||
-                    note.text.toLowerCase().indexOf(lowerQuery) !== -1) {
-                    filteredModel.append(note)
+            // Text search
+            if (query !== "") {
+                var lowerQuery = query.toLowerCase()
+                if (note.title.toLowerCase().indexOf(lowerQuery) === -1 &&
+                    note.text.toLowerCase().indexOf(lowerQuery) === -1) {
+                    continue
                 }
             }
+            filteredModel.append(note)
         }
     }
 
     function reloadNotes() {
         Db.loadNotes(notesModel, sortField, sortDir)
+        filterTagList = Db.getAllTags()
+        // Remove filter tags that no longer exist
+        for (var i = activeFilterTags.length - 1; i >= 0; i--) {
+            if (filterTagList.indexOf(activeFilterTags[i]) < 0) {
+                activeFilterTags.splice(i, 1)
+            }
+        }
         filterNotes(searchField.text)
+    }
+
+    function openFilterMenu() {
+        var btn = selectionMode ? filterTagButton2 : filterTagButton
+        var pos = btn.mapToItem(mainPage, 0, 0)
+        filterTagMenu.y = selectionMode ? mainPage.height - bottomBar.height - filterTagMenu.height : normalHeader.height
+        filterTagMenu.x = Math.max(0, pos.x + btn.width - filterTagMenu.width)
+        filterTagMenu.visible = true
     }
 
     function applySort(field) {
@@ -177,6 +205,83 @@ Page {
         }
     }
 
+    // --- Filter tag dropdown menu ---
+    Rectangle {
+        id: filterTagMenu
+        visible: false
+        z: 101
+        width: Theme.itemSizeLarge * 3
+        height: Math.min(5 * Theme.itemSizeSmall + Theme.paddingMedium * 2, filterTagColumn.implicitHeight + Theme.paddingMedium * 2)
+        color: Theme.overlayBackgroundColor
+        radius: 12
+        border.color: Theme.rgba(Theme.secondaryColor, 0.3)
+        border.width: 1
+        clip: true
+
+        SilicaFlickable {
+            anchors.fill: parent
+            contentHeight: filterTagColumn.height + Theme.paddingMedium * 2
+
+            Column {
+                id: filterTagColumn
+                width: parent.width
+                anchors.centerIn: parent
+
+                BackgroundItem {
+                    width: parent.width
+                    height: Theme.itemSizeSmall
+                    onClicked: {
+                        activeFilterTags = []
+                        filterNotes(searchField.text)
+                        filterTagMenu.visible = false
+                    }
+                    Label {
+                        anchors { left: parent.left; leftMargin: Theme.paddingLarge; verticalCenter: parent.verticalCenter }
+                        text: qsTr("Все заметки")
+                        color: activeFilterTags.length === 0 ? Theme.highlightColor : Theme.primaryColor
+                        font.pixelSize: Theme.fontSizeSmall
+                    }
+                }
+
+                Repeater {
+                    model: filterTagList
+                    BackgroundItem {
+                        width: parent.width
+                        height: Theme.itemSizeSmall
+                        onClicked: {
+                            var idx = mainPage.activeFilterTags.indexOf(modelData)
+                            if (idx >= 0) {
+                                mainPage.activeFilterTags.splice(idx, 1)
+                            } else {
+                                mainPage.activeFilterTags.push(modelData)
+                            }
+                            mainPage.activeFilterTagsChanged()
+                            filterNotes(searchField.text)
+                        }
+                        Label {
+                            width: parent.width - 2 * Theme.paddingLarge
+                            anchors.verticalCenter: parent.verticalCenter
+                            x: Theme.paddingLarge
+                            text: modelData
+                            color: mainPage.activeFilterTags.indexOf(modelData) >= 0 ? Theme.highlightColor : Theme.primaryColor
+                            font.pixelSize: Theme.fontSizeSmall
+                            elide: Text.ElideRight
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Background MouseArea to dismiss filter tag menu
+    MouseArea {
+        id: filterTagMenuDismiss
+        anchors.fill: parent
+        visible: filterTagMenu.visible
+        z: 100
+        onClicked: filterTagMenu.visible = false
+    }
+
     // --- More dropdown menu ---
     Rectangle {
         id: moreMenu
@@ -205,6 +310,42 @@ Page {
                     anchors { left: parent.left; leftMargin: Theme.paddingLarge; verticalCenter: parent.verticalCenter }
                     text: qsTr("О программе")
                     color: parent.down ? Theme.highlightColor : Theme.primaryColor
+                    font.pixelSize: Theme.fontSizeSmall
+                }
+            }
+
+            BackgroundItem {
+                width: parent.width
+                height: Theme.itemSizeSmall
+                visible: selectionMode
+                onClicked: {
+                    moreMenu.visible = false
+                    if (mainPage.selectedIds.length === 0) return
+                    var seen = {}
+                    var unique = []
+                    for (var s = 0; s < mainPage.selectedIds.length; s++) {
+                        var sid = mainPage.selectedIds[s]
+                        for (var n = 0; n < notesModel.count; n++) {
+                            var note = notesModel.get(n)
+                            if (note.noteId === sid) {
+                                var rawTags = (note.tags || "").split("|")
+                                for (var t = 0; t < rawTags.length; t++) {
+                                    var tag = rawTags[t].trim()
+                                    if (tag.length > 0 && !seen[tag]) {
+                                        seen[tag] = true
+                                        unique.push(tag)
+                                    }
+                                }
+                                break
+                            }
+                        }
+                    }
+                    pageStack.push(Qt.resolvedUrl("TagEditorPage.qml"), { "noteIds": mainPage.selectedIds.slice(), "initialTags": unique.join(", ") })
+                }
+                Label {
+                    anchors { left: parent.left; leftMargin: Theme.paddingLarge; verticalCenter: parent.verticalCenter }
+                    text: qsTr("Изменение тегов")
+                    color: mainPage.selectedIds.length > 0 ? (parent.down ? Theme.highlightColor : Theme.primaryColor) : Theme.secondaryColor
                     font.pixelSize: Theme.fontSizeSmall
                 }
             }
@@ -376,6 +517,18 @@ Page {
             icon.source: "image://theme/icon-m-down"
             onClicked: mainPage.openSortMenu()
         }
+
+        IconButton {
+            id: filterTagButton
+            anchors { right: sortButton.left; rightMargin: Theme.paddingSmall; verticalCenter: parent.verticalCenter }
+            width: Theme.iconSizeMedium
+            height: Theme.iconSizeMedium
+            icon.source: "image://theme/icon-m-filter"
+            icon.color: activeFilterTags.length > 0 ? Theme.highlightColor : Theme.secondaryColor
+            onClicked: mainPage.openFilterMenu()
+        }
+
+        
 
         IconButton {
             id: searchHeaderButton
@@ -647,7 +800,7 @@ Page {
 
                 ViewPlaceholder {
                     enabled: filteredModel.count === 0
-                    text: searchField.text.length > 0 ? qsTr("Ничего не найдено") : qsTr("Нет заметок")
+                    text: searchField.text.length > 0 ? qsTr("Нет совпадений") : qsTr("Нет заметок")
                     hintText: searchField.text.length > 0 ? "" : qsTr("Нажмите на микрофон, чтобы начать запись")
                 }
             }
@@ -680,7 +833,7 @@ Page {
             icon.source: "image://theme/icon-m-more"
             onClicked: {
                 var pos = moreHeaderButton2.mapToItem(mainPage, 0, 0)
-                moreMenu.y = mainPage.height - bottomBar.height - (Theme.itemSizeSmall + Theme.paddingMedium * 2)
+                moreMenu.y = mainPage.height - bottomBar.height - (2 * Theme.itemSizeSmall + Theme.paddingMedium * 2)
                 moreMenu.x = Math.max(0, pos.x + moreHeaderButton2.width - moreMenu.width)
                 moreMenu.visible = !moreMenu.visible
             }
@@ -738,6 +891,16 @@ Page {
             height: Theme.iconSizeMedium
             icon.source: "image://theme/icon-m-down"
             onClicked: mainPage.openSortMenu()
+        }
+
+        IconButton {
+            id: filterTagButton2
+            anchors { right: sortButton2.left; rightMargin: Theme.paddingSmall; verticalCenter: parent.verticalCenter }
+            width: Theme.iconSizeMedium
+            height: Theme.iconSizeMedium
+            icon.source: "image://theme/icon-m-filter"
+            icon.color: activeFilterTags.length > 0 ? Theme.highlightColor : Theme.secondaryColor
+            onClicked: mainPage.openFilterMenu()
         }
     }
 
@@ -815,6 +978,35 @@ Page {
                 y: Theme.paddingMedium
                 width: parent.width - 2 * Theme.horizontalPageMargin - Theme.iconSizeMedium - Theme.paddingMedium
 
+                // Tags
+                Flow {
+                    width: parent.width
+                    spacing: Theme.paddingSmall
+                    visible: tags && tags.length > 0
+                    Repeater {
+                        model: tags.split("|")
+                        Rectangle {
+                            width: Math.min(tagLabel.implicitWidth + Theme.paddingMedium, parent.width - Theme.paddingSmall)
+                            height: tagLabel.implicitHeight + Theme.paddingSmall
+                            radius: Theme.paddingSmall
+                            color: Theme.rgba(Theme.highlightColor, 0.15)
+                            border.color: Theme.highlightColor
+                            border.width: 1
+                            Label {
+                                id: tagLabel
+                                anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter; margins: Theme.paddingSmall }
+                                text: modelData
+                                color: Theme.highlightColor
+                                font.pixelSize: Theme.fontSizeExtraSmall
+                                elide: Text.ElideRight
+                                maximumLineCount: 1
+                            }
+                        }
+                    }
+                }
+
+                Item { width: 1; height: Theme.paddingSmall }
+
                 Label {
                     width: parent.width
                     text: title
@@ -883,5 +1075,35 @@ Page {
             width: parent.width; height: parent.height
             onClicked: pageStack.push(Qt.resolvedUrl("RecordingPage.qml"))
         }
+    }
+
+    // --- Tag editor dialog ---
+    Dialog {
+        id: tagEditorDialog
+        property var noteIds: []
+        allowedOrientations: Orientation.All
+        z: 100
+        Column {
+            width: parent.width
+            spacing: Theme.paddingMedium
+            DialogHeader { title: qsTr("Теги") }
+            TextField {
+                id: tagField
+                width: parent.width
+                placeholderText: qsTr("Введите теги через запятую")
+            }
+        }
+        onAccepted: {
+            var tags = tagField.text.split(",").map(function(s) { return s.trim() }).filter(function(s) { return s.length > 0 })
+            for (var i = 0; i < noteIds.length; i++) {
+                Db.updateNoteTags(noteIds[i], tags)
+            }
+            reloadNotes()
+            exitSelectionMode()
+        }
+    }
+
+    Notification {
+        id: notificationPanel
     }
 }

@@ -1,5 +1,7 @@
 #include "speechrecognizer.h"
+#ifndef EMULATOR
 #include "voskworker.h"
+#endif
 
 #include <QAudioDeviceInfo>
 #include <QAudioFormat>
@@ -37,15 +39,17 @@ SpeechRecognizer::SpeechRecognizer(QObject *parent)
     , m_audioInput(nullptr)
     , m_audioIo(nullptr)
     , m_gotAudio(false)
+#ifdef EMULATOR
+    , m_worker(nullptr)
+#else
     , m_worker(new VoskWorker)
+#endif
 {
-    // If capture starts but no samples ever arrive (typical on the Aurora
-    // emulator, which has no real microphone), surface an error instead of
-    // leaving the UI stuck at 00:00 forever.
     m_noAudioTimer.setSingleShot(true);
     m_noAudioTimer.setInterval(4000);
     connect(&m_noAudioTimer, &QTimer::timeout, this, &SpeechRecognizer::onNoAudioTimeout);
 
+#ifndef EMULATOR
     m_worker->moveToThread(&m_thread);
     connect(&m_thread, &QThread::finished, m_worker, &QObject::deleteLater);
 
@@ -60,13 +64,16 @@ SpeechRecognizer::SpeechRecognizer(QObject *parent)
     connect(m_worker, &VoskWorker::finalUtterance, this, &SpeechRecognizer::onFinalUtterance);
 
     m_thread.start();
+#endif
 }
 
 SpeechRecognizer::~SpeechRecognizer()
 {
     teardownAudio();
+#ifndef EMULATOR
     m_thread.quit();
     m_thread.wait();
+#endif
 }
 
 void SpeechRecognizer::setModelPath(const QString &path)
@@ -126,17 +133,27 @@ void SpeechRecognizer::init()
     if (m_modelReady || m_loading) {
         return;
     }
+#ifndef EMULATOR
     setLoading(true);
     emit requestLoad(m_modelPath, m_sampleRate);
+#else
+    setLoading(true);
+    QTimer::singleShot(100, this, [this]() {
+        setLoading(false);
+        setModelReady(true);
+    });
+#endif
 }
 
 void SpeechRecognizer::onModelLoaded(bool ok, const QString &message)
 {
+#ifndef EMULATOR
     setLoading(false);
     setModelReady(ok);
     if (!ok) {
         emit errorOccurred(message);
     }
+#endif
 }
 
 void SpeechRecognizer::onPartial(const QString &text)
@@ -189,8 +206,11 @@ void SpeechRecognizer::start()
     setPartialText(QString());
     m_durationSec = 0;
     emit durationSecChanged();
+#ifndef EMULATOR
     emit requestReset();
+#endif
 
+#ifndef EMULATOR
     QAudioFormat format;
     format.setSampleRate(m_sampleRate);
     format.setChannelCount(kChannels);
@@ -216,6 +236,7 @@ void SpeechRecognizer::start()
         return;
     }
     connect(m_audioIo, &QIODevice::readyRead, this, &SpeechRecognizer::onAudioDataReady);
+#endif
     setLevel(0.0);
     setRecording(true);
     m_gotAudio = false;
@@ -224,6 +245,7 @@ void SpeechRecognizer::start()
 
 void SpeechRecognizer::onAudioDataReady()
 {
+#ifndef EMULATOR
     if (!m_audioIo) {
         return;
     }
@@ -235,7 +257,6 @@ void SpeechRecognizer::onAudioDataReady()
     m_noAudioTimer.stop();
     m_pcm.append(data);
 
-    // Compute an RMS level for the meter and update duration.
     const int sampleCount = data.size() / 2;
     if (sampleCount > 0) {
         const qint16 *samples = reinterpret_cast<const qint16 *>(data.constData());
@@ -245,7 +266,6 @@ void SpeechRecognizer::onAudioDataReady()
             sumSquares += s * s;
         }
         const qreal rms = qSqrt(sumSquares / sampleCount);
-        // Scale up a little so normal speech fills the meter.
         setLevel(qBound<qreal>(0.0, rms * 3.0, 1.0));
     }
 
@@ -257,6 +277,7 @@ void SpeechRecognizer::onAudioDataReady()
     }
 
     emit requestFeed(data);
+#endif
 }
 
 void SpeechRecognizer::onNoAudioTimeout()
@@ -285,8 +306,8 @@ void SpeechRecognizer::stop()
         return;
     }
     m_noAudioTimer.stop();
-        setPaused(false);
-        // Grab any bytes still buffered before tearing the input down.
+    setPaused(false);
+#ifndef EMULATOR
     if (m_audioIo) {
         const QByteArray tail = m_audioIo->readAll();
         if (!tail.isEmpty()) {
@@ -295,11 +316,18 @@ void SpeechRecognizer::stop()
         }
     }
     teardownAudio();
+#endif
     setRecording(false);
     setLevel(0.0);
     setFinalizing(true);
-    // Runs after all queued feed() calls on the worker thread.
+#ifndef EMULATOR
     emit requestFinalize();
+#else
+    QTimer::singleShot(500, this, [this]() {
+        setFinalizing(false);
+        emit finished("", "", 0);
+    });
+#endif
 }
 
 void SpeechRecognizer::cancel()
@@ -310,7 +338,9 @@ void SpeechRecognizer::cancel()
     m_cancelled = true;
     m_noAudioTimer.stop();
     setPaused(false);
+#ifndef EMULATOR
     teardownAudio();
+#endif
     setRecording(false);
     setLevel(0.0);
     setPartialText(QString());
@@ -318,11 +348,14 @@ void SpeechRecognizer::cancel()
     m_fullText.clear();
     emit fullTextChanged();
     if (m_finalizing) {
-        // A finalize is already in flight; onFinalUtterance will honour the flag.
         return;
     }
     setFinalizing(true);
+#ifndef EMULATOR
     emit requestFinalize();
+#else
+    setFinalizing(false);
+#endif
 }
 
 void SpeechRecognizer::pause()

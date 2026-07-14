@@ -116,32 +116,32 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="564"/>
+        <location filename="../qml/pages/MainPage.qml" line="565"/>
         <source>Загрузка модели распознавания речи...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="604"/>
+        <location filename="../qml/pages/MainPage.qml" line="605"/>
         <source>Идёт запись...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="628"/>
+        <location filename="../qml/pages/MainPage.qml" line="633"/>
         <source>Нет заметок</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="628"/>
+        <location filename="../qml/pages/MainPage.qml" line="633"/>
         <source>Ничего не найдено</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="629"/>
+        <location filename="../qml/pages/MainPage.qml" line="634"/>
         <source>Нажмите на микрофон, чтобы начать запись</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/MainPage.qml" line="701"/>
+        <location filename="../qml/pages/MainPage.qml" line="715"/>
         <source>Удаление заметки</source>
         <translation type="unfinished"></translation>
     </message>
@@ -189,56 +189,41 @@
     <name>RecordingPage</name>
     <message>
         <location filename="../qml/pages/RecordingPage.qml" line="52"/>
-        <source>Запись</source>
-        <translation type="unfinished"></translation>
+        <source></source>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="53"/>
-        <source>Расшифровка</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="54"/>
-        <source>Загрузка модели</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="55"/>
-        <source>Готов к записи</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="86"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="83"/>
         <source>MIC</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="211"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="208"/>
         <source>Завершаем расшифровку...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="212"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="209"/>
         <source>Распознавание речи...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="251"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="248"/>
         <source>Загрузка модели распознавания...</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="252"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="249"/>
         <source>Модель распознавания недоступна</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="253"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="250"/>
         <source>Ожидайте завершения расшифровки</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../qml/pages/RecordingPage.qml" line="254"/>
+        <location filename="../qml/pages/RecordingPage.qml" line="251"/>
         <source>Нажмите на микрофон, чтобы начать запись</source>
         <translation type="unfinished"></translation>
     </message>
@@ -251,19 +236,19 @@
 <context>
     <name>SpeechRecognizer</name>
     <message>
-        <location filename="../src/speechrecognizer.cpp" line="204"/>
-        <location filename="../src/speechrecognizer.cpp" line="352"/>
+        <location filename="../src/speechrecognizer.cpp" line="224"/>
+        <location filename="../src/speechrecognizer.cpp" line="385"/>
         <source>Микрофон недоступен</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/speechrecognizer.cpp" line="215"/>
-        <location filename="../src/speechrecognizer.cpp" line="359"/>
+        <location filename="../src/speechrecognizer.cpp" line="235"/>
+        <location filename="../src/speechrecognizer.cpp" line="392"/>
         <source>Не удалось начать запись с микрофона</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/speechrecognizer.cpp" line="277"/>
+        <location filename="../src/speechrecognizer.cpp" line="298"/>
         <source>Микрофон не передаёт звук. В эмуляторе запись микрофона обычно недоступна — проверьте на устройстве или включите аудиовход эмулятора.</source>
         <translation type="unfinished"></translation>
     </message>

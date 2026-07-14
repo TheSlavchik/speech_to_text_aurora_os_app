@@ -14,7 +14,9 @@ class QAudioInput;
 class QIODevice;
 QT_END_NAMESPACE
 
+#ifndef EMULATOR
 class VoskWorker;
+#endif
 
 // SpeechRecognizer wires live microphone capture (QtMultimedia) to an offline
 // Vosk recognizer that runs in its own worker thread, so the UI stays
@@ -131,7 +133,11 @@ private:
     QTimer m_noAudioTimer;
 
     QThread m_thread;
+#ifdef EMULATOR
+    QObject *m_worker;
+#else
     VoskWorker *m_worker;
+#endif
 };
 
 #endif // SPEECHRECOGNIZER_H

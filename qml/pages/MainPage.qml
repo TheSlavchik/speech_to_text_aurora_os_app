@@ -66,9 +66,20 @@ Page {
 
     function deleteSelected() {
         if (selectedIds.length === 0) return
-        remorseDelete.execute(notesListView, qsTr("Удаление заметок"), function() {
-            Db.deleteNotes(selectedIds)
-            exitSelectionMode()
+
+        // Фикс Бага №1: Создаем неизменяемую копию массива выделенных ID.
+        // Теперь изменения списка во время тиканья таймера не повлияют на удаление.
+        var idsToDelete = selectedIds.slice()
+
+        remorseDelete.execute(qsTr("Удаление заметок"), function() {
+            Db.deleteNotes(idsToDelete) // Удаляем строго скопированные ID
+
+            // Фикс Бага №2: Не выходим из режима выделения, а только очищаем выбор.
+            // Режим останется активным, счетчик в шапке сбросится на "Выделено: 0".
+            selectedIds = []
+            allSelected = false
+            selectedIdsChanged()
+
             reloadNotes()
         })
     }
@@ -203,12 +214,12 @@ Page {
             Column {
                 width: parent.width
                 spacing: Theme.paddingMedium
-                
+
                 // Custom header with icon buttons
                 Item {
                     width: parent.width
                     height: Theme.itemSizeMedium
-                    
+
                     IconButton {
                         id: cancelRenameButton
                         anchors { left: parent.left; leftMargin: Theme.paddingMedium; verticalCenter: parent.verticalCenter }
@@ -217,14 +228,14 @@ Page {
                             renameDialogComponent.reject()
                         }
                     }
-                    
+
                     Label {
                         anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
                         text: qsTr("Переименовать заметку")
                         color: Theme.primaryColor
                         font.pixelSize: Theme.fontSizeMedium
                     }
-                    
+
                     IconButton {
                         id: confirmRenameButton
                         anchors { right: parent.right; rightMargin: Theme.paddingMedium; verticalCenter: parent.verticalCenter }
@@ -240,7 +251,7 @@ Page {
                         }
                     }
                 }
-                
+
                 TextField {
                     id: nameField
                     width: parent.width
@@ -553,6 +564,9 @@ Page {
         color: "transparent"
         visible: !selectionMode
         z: 10
+        enabled: !remorseDelete.active
+        opacity: remorseDelete.active ? 0.5 : 1.0
+        Behavior on opacity { NumberAnimation { duration: 150 } }
 
         Rectangle {
             anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
@@ -579,8 +593,6 @@ Page {
             icon.color: activeFilterTags.length > 0 ? Theme.highlightColor : Theme.secondaryColor
             onClicked: mainPage.openFilterMenu()
         }
-
-
 
         IconButton {
             id: searchHeaderButton
@@ -616,6 +628,10 @@ Page {
         color: "transparent"
         visible: selectionMode
         z: 10
+
+        enabled: !remorseDelete.active
+        opacity: remorseDelete.active ? 0.5 : 1.0
+        Behavior on opacity { NumberAnimation { duration: 150 } }
 
         Rectangle {
             anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
@@ -674,9 +690,12 @@ Page {
         anchors { top: normalHeader.visible ? normalHeader.bottom : selectionHeader.bottom; left: parent.left; right: parent.right }
         height: searchVisible ? Theme.itemSizeMedium : 0
         color: "transparent"
+        clip: true
         visible: true
         z: 10
-        clip: true
+        enabled: !remorseDelete.active
+        opacity: remorseDelete.active ? 0.5 : 1.0
+        Behavior on opacity { NumberAnimation { duration: 150 } }
 
         Rectangle {
             anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
@@ -709,21 +728,27 @@ Page {
         }
     }
 
-    SilicaFlickable {
-        id: flickable
+    // --- ОСНОВНОЙ СПИСОК (БЕЗ ВНЕШНЕГО FLICKABLE) ---
+    SilicaListView {
+        id: notesListView
         anchors {
             top: searchHeader.bottom
             left: parent.left
             right: parent.right
             bottom: bottomBar.visible ? bottomBar.top : parent.bottom
         }
+        // Блокируем любые клики и прокрутку списка, пока активен таймер удаления
+        enabled: !remorseDelete.active
+
         boundsBehavior: Flickable.DragOverBounds
         clip: true
-        contentHeight: column.height
+        model: filteredModel
+        delegate: noteDelegate
+        spacing: 0
 
-        Column {
-            id: column
-            width: parent.width
+        // Индикаторы загрузки и записи перенесены в заголовок списка
+        header: Column {
+            width: notesListView.width
 
             // Model loading indicator
             Item {
@@ -791,27 +816,20 @@ Page {
                     }
                 }
             }
-
-            SilicaListView {
-                id: notesListView
-                width: parent.width
-                height: Math.max(mainPage.height - column.y - Theme.paddingLarge, emptyLabel.height + Theme.paddingLarge)
-                model: filteredModel
-                delegate: noteDelegate
-                spacing: 0
-                header: headerComponent
-                footer: Item {
-                    width: parent.width
-                    height: recordButton.height + Theme.paddingLarge * 2
-                }
-
-                ViewPlaceholder {
-                    enabled: filteredModel.count === 0
-                    text: searchField.text.length > 0 ? qsTr("Нет совпадений") : qsTr("Нет заметок")
-                    hintText: searchField.text.length > 0 ? "" : qsTr("Нажмите на микрофон, чтобы начать запись")
-                }
-            }
         }
+
+        // Футер-спейсер резервирует место под парящую кнопку микрофона
+        footer: Item {
+            width: parent.width
+            height: recordButton.height + Theme.paddingLarge * 2
+        }
+
+        ViewPlaceholder {
+            enabled: filteredModel.count === 0
+            text: searchField.text.length > 0 ? qsTr("Нет совпадений") : qsTr("Нет заметок")
+            hintText: searchField.text.length > 0 ? "" : qsTr("Нажмите на микрофон, чтобы начать запись")
+        }
+
         VerticalScrollDecorator {}
     }
 
@@ -824,6 +842,11 @@ Page {
         visible: selectionMode
         z: 10
 
+        // Блокируем кнопки нижней панели и делаем их полупрозрачными во время удаления
+        enabled: !remorseDelete.active
+        opacity: remorseDelete.active ? 0.5 : 1.0
+        Behavior on opacity { NumberAnimation { duration: 150 } }
+
         Rectangle {
             anchors { left: parent.left; right: parent.right; top: parent.top }
             height: 1
@@ -831,7 +854,6 @@ Page {
             opacity: 0.5
         }
 
-        // Order right to left: More, Delete, Rename, Search, Sort
         IconButton {
             id: moreHeaderButton2
             anchors { right: parent.right; rightMargin: Theme.paddingMedium; verticalCenter: parent.verticalCenter }
@@ -911,12 +933,8 @@ Page {
         }
     }
 
-    RemorseItem { id: remorseDelete; width: parent.width; height: Theme.itemSizeMedium }
-
-    Component {
-        id: headerComponent
-        Item { width: parent.width; height: filteredModel.count > 0 ? -1 : 0 }
-    }
+    // Использование RemorsePopup (вместо RemorseItem) решает 2-ю проблему
+    RemorsePopup { id: remorseDelete }
 
     Component {
         id: noteDelegate
@@ -926,7 +944,6 @@ Page {
             height: noteColumn.height + 2 * Theme.paddingMedium
             RemorseItem { id: remorse }
 
-            // Top separator line (only for first note)
             Rectangle {
                 anchors { left: parent.left; right: parent.right; top: parent.top }
                 height: 1
@@ -942,7 +959,6 @@ Page {
                 })
             }
 
-            // Selection check-box (right)
             Item {
                 id: checkBox
                 anchors {
@@ -985,7 +1001,6 @@ Page {
                 y: Theme.paddingMedium
                 width: parent.width - 2 * Theme.horizontalPageMargin - Theme.iconSizeMedium - Theme.paddingMedium
 
-                // Tags
                 Flow {
                     width: parent.width
                     spacing: Theme.paddingSmall
@@ -1052,7 +1067,6 @@ Page {
                 if (!mainPage.selectionMode) mainPage.enterSelectionMode(noteId)
             }
 
-            // Separator line
             Rectangle {
                 anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
                 height: 1
@@ -1074,6 +1088,11 @@ Page {
         }
         width: Theme.itemSizeLarge; height: Theme.itemSizeLarge
         radius: width / 2; color: Theme.highlightColor
+
+        // Делаем микрофон неактивным и полупрозрачным во время таймера
+        enabled: !remorseDelete.active
+        opacity: remorseDelete.active ? 0.4 : 1.0
+        Behavior on opacity { NumberAnimation { duration: 150 } }
 
         IconButton {
             anchors.centerIn: parent

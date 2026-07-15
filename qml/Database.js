@@ -139,6 +139,7 @@ function deleteNote(noteId) {
     db.transaction(function(tx) {
         tx.executeSql("DELETE FROM notes WHERE id = ?", [noteId])
     })
+    cleanupOrphanedTags()
 }
 
 function notesCount() {
@@ -162,6 +163,7 @@ function deleteNotes(ids) {
         var r = tx.executeSql("DELETE FROM notes WHERE id IN (" + placeholders + ")", ids)
         count = r.rowsAffected
     })
+    cleanupOrphanedTags()
     return count
 }
 
@@ -176,6 +178,29 @@ function updateNoteTitle(id, newTitle) {
 }
 
 // Tag functions
+
+function cleanupOrphanedTags() {
+    var db = getDatabase()
+    db.transaction(function(tx) {
+        tx.executeSql("DELETE FROM tags")
+        var rsAll = tx.executeSql("SELECT tags FROM notes WHERE tags IS NOT NULL AND tags <> ''")
+        var allTagsSet = {}
+        for (var k = 0; k < rsAll.rows.length; k++) {
+            var rowTags = rsAll.rows.item(k).tags
+            var arr = rowTags.split("|")
+            for (var a = 0; a < arr.length; a++) {
+                var tag = arr[a].trim()
+                if (tag.length > 0) {
+                    allTagsSet[tag] = true
+                }
+            }
+        }
+        var uniqueTags = Object.keys(allTagsSet)
+        for (var u = 0; u < uniqueTags.length; u++) {
+            tx.executeSql("INSERT OR IGNORE INTO tags (name, created) VALUES (?, ?)", [uniqueTags[u], Date.now()])
+        }
+    })
+}
 
 function updateNoteTags(noteId, tags) {
     var db = getDatabase()

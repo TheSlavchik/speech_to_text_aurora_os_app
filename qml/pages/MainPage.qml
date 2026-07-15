@@ -156,6 +156,17 @@ Page {
         sortMenu.visible = true
     }
 
+    function repositionMenus() {
+        if (sortMenu.visible) openSortMenu()
+        if (filterTagMenu.visible) openFilterMenu()
+        if (moreMenu.visible) {
+            var btn = selectionMode ? moreHeaderButton2 : moreHeaderButton
+            var pos = btn.mapToItem(mainPage, 0, 0)
+            moreMenu.y = selectionMode ? mainPage.height - bottomBar.height - (2 * Theme.itemSizeSmall + Theme.paddingMedium * 2) : normalHeader.height
+            moreMenu.x = Math.max(0, pos.x + btn.width - moreMenu.width)
+        }
+    }
+
     Timer {
         id: searchScrollTimer
         interval: 0
@@ -173,6 +184,9 @@ Page {
     onStatusChanged: {
         if (status === PageStatus.Active) reloadNotes()
     }
+
+    onWidthChanged: repositionMenus()
+    onHeightChanged: repositionMenus()
 
     Connections {
         target: SpeechRecognizer
@@ -1019,6 +1033,7 @@ Page {
                     width: parent.width; text: preview
                     color: Theme.secondaryColor; font.pixelSize: Theme.fontSizeSmall
                     maximumLineCount: 2; truncationMode: TruncationMode.Elide; wrapMode: Text.WordWrap
+                    visible: preview.length > 0
                 }
             }
 

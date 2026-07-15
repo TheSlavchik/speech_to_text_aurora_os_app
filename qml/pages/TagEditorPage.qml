@@ -3,7 +3,7 @@ import Sailfish.Silica 1.0
 import ru.omstu.voicenotes 1.0
 import "../Database.js" as Db
 
-Page {
+Dialog {
     id: tagEditorPage
     objectName: "tagEditorPage"
     allowedOrientations: Orientation.All
@@ -15,53 +15,55 @@ Page {
         tagField.text = initialTags
     }
 
-    SilicaFlickable {
-        anchors.fill: parent
-        contentHeight: column.height
+    Column {
+        width: parent.width
 
-        Column {
-            id: column
+        Item {
             width: parent.width
+            height: Theme.itemSizeMedium
 
-            Item {
-                width: parent.width
-                height: Theme.itemSizeMedium
-
-                Label {
-                    anchors.centerIn: parent
-                    text: qsTr("Выбрано: %1").arg(noteIds.length)
-                    color: Theme.primaryColor
-                    font.pixelSize: Theme.fontSizeSmall
-                }
+            IconButton {
+                id: cancelTagButton
+                anchors { left: parent.left; leftMargin: Theme.paddingMedium; verticalCenter: parent.verticalCenter }
+                icon.source: "image://theme/icon-m-close"
+                onClicked: tagEditorPage.reject()
             }
 
-            TextField {
-                id: tagField
-                width: parent.width
-                placeholderText: qsTr("Введите теги через запятую")
+            Label {
+                anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                text: qsTr("Выбрано: %1").arg(noteIds.length)
+                color: Theme.primaryColor
+                font.pixelSize: Theme.fontSizeSmall
             }
 
-            Item { width: 1; height: Theme.paddingMedium }
+            IconButton {
+                id: saveTagButton
+                anchors { right: parent.right; rightMargin: Theme.paddingMedium; verticalCenter: parent.verticalCenter }
+                icon.source: "image://theme/icon-m-acknowledge"
+                enabled: tagField.text.trim().length > 0
+                onClicked: tagEditorPage.accept()
+            }
+        }
 
-            Button {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: qsTr("Сохранить")
-                onClicked: {
-                    var parts = tagField.text.split(",")
-                    var tags = []
-                    for (var k = 0; k < parts.length; k++) {
-                        var t = parts[k].trim()
-                        if (t.length > 0) {
-                            tags.push(t)
-                        }
-                    }
-                    if (tags.length > 0) {
-                        for (var i = 0; i < noteIds.length; i++) {
-                            Db.updateNoteTags(noteIds[i], tags)
-                        }
-                    }
-                    pageStack.pop()
-                }
+        TextField {
+            id: tagField
+            width: parent.width
+            placeholderText: qsTr("Введите теги через запятую")
+        }
+    }
+
+    onAccepted: {
+        var parts = tagField.text.split(",")
+        var tags = []
+        for (var k = 0; k < parts.length; k++) {
+            var t = parts[k].trim()
+            if (t.length > 0) {
+                tags.push(t)
+            }
+        }
+        if (tags.length > 0) {
+            for (var i = 0; i < noteIds.length; i++) {
+                Db.updateNoteTags(noteIds[i], tags)
             }
         }
     }

@@ -15,6 +15,7 @@ Page {
     property string sortDir: "desc"
     property var activeFilterTags: []
     property var filterTagList: []
+    property bool searchVisible: false
 
     // --- Multi-selection state ---
     property bool selectionMode: false
@@ -188,7 +189,44 @@ Page {
             Column {
                 width: parent.width
                 spacing: Theme.paddingMedium
-                DialogHeader { title: qsTr("Переименовать заметку") }
+                
+                // Custom header with icon buttons
+                Item {
+                    width: parent.width
+                    height: Theme.itemSizeMedium
+                    
+                    IconButton {
+                        id: cancelRenameButton
+                        anchors { left: parent.left; leftMargin: Theme.paddingMedium; verticalCenter: parent.verticalCenter }
+                        icon.source: "image://theme/icon-m-close"
+                        onClicked: {
+                            renameDialogComponent.reject()
+                        }
+                    }
+                    
+                    Label {
+                        anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                        text: qsTr("Переименовать заметку")
+                        color: Theme.primaryColor
+                        font.pixelSize: Theme.fontSizeMedium
+                    }
+                    
+                    IconButton {
+                        id: confirmRenameButton
+                        anchors { right: parent.right; rightMargin: Theme.paddingMedium; verticalCenter: parent.verticalCenter }
+                        icon.source: "image://theme/icon-m-acknowledge"
+                        enabled: nameField.text.trim().length > 0
+                        onClicked: {
+                            if (nameField.text.trim().length > 0 && noteId >= 0) {
+                                Db.updateNoteTitle(noteId, nameField.text.trim())
+                                exitSelectionMode()
+                                reloadNotes()
+                                renameDialogComponent.accept()
+                            }
+                        }
+                    }
+                }
+                
                 TextField {
                     id: nameField
                     width: parent.width
@@ -506,7 +544,7 @@ Page {
             anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
             height: 1
             color: Theme.secondaryColor
-            opacity: 0.3
+            opacity: 0.5
         }
 
         IconButton {
@@ -528,7 +566,7 @@ Page {
             onClicked: mainPage.openFilterMenu()
         }
 
-        
+
 
         IconButton {
             id: searchHeaderButton
@@ -536,8 +574,8 @@ Page {
             icon.source: "image://theme/icon-m-search"
             icon.color: searchField.text.length > 0 ? Theme.highlightColor : Theme.secondaryColor
             onClicked: {
-                searchRow.visible = !searchRow.visible
-                if (!searchRow.visible) searchField.focus = false
+                searchVisible = !searchVisible
+                if (!searchVisible) searchField.focus = false
             }
         }
 
@@ -569,7 +607,7 @@ Page {
             anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
             height: 1
             color: Theme.secondaryColor
-            opacity: 0.3
+            opacity: 0.5
         }
 
         IconButton {
@@ -620,7 +658,7 @@ Page {
     Rectangle {
         id: searchHeader
         anchors { top: normalHeader.visible ? normalHeader.bottom : selectionHeader.bottom; left: parent.left; right: parent.right }
-        height: searchRow.visible ? Theme.itemSizeMedium : 0
+        height: searchVisible ? Theme.itemSizeMedium : 0
         color: "transparent"
         visible: true
         z: 10
@@ -630,74 +668,29 @@ Page {
             anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
             height: 1
             color: Theme.secondaryColor
-            opacity: 0.3
+            opacity: 0.5
         }
 
-        Row {
-            id: searchRow
-            width: parent.width
-            visible: false
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: Theme.paddingSmall
+        IconButton {
+            id: clearSearchButton
+            anchors { left: parent.left; leftMargin: Theme.paddingSmall; verticalCenter: parent.verticalCenter }
+            visible: searchVisible
+            icon.source: "image://theme/icon-m-clear"
+            enabled: searchField.text.length > 0
+            opacity: enabled ? 1.0 : 0.4
+            onClicked: searchField.text = ""
+        }
 
-            IconButton {
-                id: clearSearchButton
-                anchors.verticalCenter: parent.verticalCenter
-                icon.source: "image://theme/icon-m-clear"
-                enabled: searchField.text.length > 0
-                opacity: enabled ? 1.0 : 0.4
-                onClicked: searchField.text = ""
-            }
+        Item {
+            anchors { left: clearSearchButton.right; leftMargin: Theme.paddingSmall; right: parent.right; rightMargin: Theme.paddingMedium; top: parent.top; bottom: parent.bottom }
+            visible: searchVisible
+            clip: true
 
-            Rectangle {
-                width: parent.width - clearSearchButton.width - Theme.paddingSmall
-                height: Theme.itemSizeSmall
-                color: "transparent"
-                border.color: "transparent"
-                anchors.verticalCenter: parent.verticalCenter
-                clip: true
-
-                Flickable {
-                    id: searchFlickable
-                    anchors.fill: parent
-                    contentWidth: searchField.x + searchField.width
-                    contentHeight: parent.height
-                    interactive: contentWidth > width
-                    boundsBehavior: Flickable.StopAtBounds
-
-                    TextInput {
-                        id: searchField
-                        x: 4 * Theme.paddingSmall
-                        width: Math.max(searchFlickable.width - 4 * Theme.paddingSmall, searchField.contentWidth + 3 * Theme.paddingLarge)
-                        height: parent.height
-                        verticalAlignment: TextInput.AlignVCenter
-                        color: Theme.primaryColor
-                        font.pixelSize: Theme.fontSizeMedium
-                        onTextChanged: {
-                            filterNotes(text)
-                            if (cursorPosition === text.length) {
-                                searchScrollTimer.start()
-                            }
-                        }
-                    }
-                }
-
-                Label {
-                    anchors {
-                        fill: parent
-                        leftMargin: 4 * Theme.paddingSmall
-                    }
-                    verticalAlignment: Text.AlignVCenter
-                    text: qsTr("Поиск по заметкам...")
-                    color: Theme.secondaryColor
-                    font.pixelSize: Theme.fontSizeMedium
-                    visible: searchField.text.length === 0
-
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: searchField.forceActiveFocus()
-                    }
-                }
+            TextField {
+                id: searchField
+                anchors { left: parent.left; right: parent.right; top: parent.top; bottom: parent.bottom; bottomMargin: -2 * Theme.paddingLarge; topMargin: Theme.paddingLarge }
+                placeholderText: qsTr("Поиск по заметкам...")
+                onTextChanged: filterNotes(text)
             }
         }
     }
@@ -821,7 +814,7 @@ Page {
             anchors { left: parent.left; right: parent.right; top: parent.top }
             height: 1
             color: Theme.secondaryColor
-            opacity: 0.3
+            opacity: 0.5
         }
 
         // Order right to left: More, Delete, Rename, Search, Sort
@@ -879,8 +872,8 @@ Page {
             icon.source: "image://theme/icon-m-search"
             icon.color: searchField.text.length > 0 ? Theme.highlightColor : Theme.secondaryColor
             onClicked: {
-                searchRow.visible = !searchRow.visible
-                if (!searchRow.visible) searchField.focus = false
+                searchVisible = !searchVisible
+                if (!searchVisible) searchField.focus = false
             }
         }
 
@@ -924,7 +917,7 @@ Page {
                 anchors { left: parent.left; right: parent.right; top: parent.top }
                 height: 1
                 color: Theme.secondaryColor
-                opacity: 0.15
+                opacity: 0.3
                 visible: index === 0
             }
 
@@ -1049,7 +1042,7 @@ Page {
                 anchors { left: parent.left; right: parent.right; bottom: parent.bottom }
                 height: 1
                 color: Theme.secondaryColor
-                opacity: 0.15
+                opacity: 0.3
             }
         }
     }

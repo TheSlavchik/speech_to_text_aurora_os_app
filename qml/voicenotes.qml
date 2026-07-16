@@ -16,9 +16,10 @@ ApplicationWindow {
 
     function formatTime(seconds) {
         var s = Math.floor(seconds)
-        var min = Math.floor(s / 60)
+        var h = Math.floor(s / 3600)
+        var m = Math.floor((s % 3600) / 60)
         var sec = s % 60
-        return (min < 10 ? "0" : "") + min + ":" + (sec < 10 ? "0" : "") + sec
+        return (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m + ":" + (sec < 10 ? "0" : "") + sec
     }
 
     Component.onCompleted: {
@@ -26,7 +27,7 @@ ApplicationWindow {
         // Centralised save — works regardless of which page is open.
         SpeechRecognizer.finished.connect(function(text, audioUrl, durationSec) {
             var now = new Date()
-            var dateStr = Qt.formatDateTime(now, "dd.MM.yyyy hh:mm")
+            var dateStr = Qt.formatDateTime(now, "dd.MM.yyyy hh:mm:ss")
             var title = qsTr("Запись от %1").arg(dateStr)
             var durStr = formatTime(durationSec)
             var fileBytes = SpeechRecognizer.fileSize(audioUrl)

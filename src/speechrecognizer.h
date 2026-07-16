@@ -70,6 +70,8 @@ public slots:
     Q_INVOKABLE bool saveTextToFile(const QString &filePath, const QString &text);
     // Returns the size of a file in bytes, or 0 on error. Handles file:// URLs.
     Q_INVOKABLE int fileSize(const QString &path) const;
+    // Merges multiple WAV files into one. Returns true on success.
+    Q_INVOKABLE bool mergeAudioFiles(const QStringList &inputPaths, const QString &outputPath);
 
 signals:
     void modelPathChanged();

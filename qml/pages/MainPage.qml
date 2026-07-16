@@ -101,6 +101,13 @@ Page {
         }
     }
 
+    function mergeSelected() {
+        if (selectedIds.length < 2) return
+        Db.mergeNotes(selectedIds.slice())
+        exitSelectionMode()
+        reloadNotes()
+    }
+
     ListModel { id: notesModel }
     ListModel { id: filteredModel }
 
@@ -203,7 +210,7 @@ Page {
     function openSortMenu() {
         var btn = selectionMode ? sortButton2 : sortButton
         var pos = btn.mapToItem(mainPage, 0, 0)
-        sortMenu.y = selectionMode ? mainPage.height - bottomBar.height - (4 * Theme.itemSizeSmall + Theme.paddingMedium * 2) : normalHeader.height
+        sortMenu.y = selectionMode ? mainPage.height - bottomBar.height - (5 * Theme.itemSizeSmall + Theme.paddingMedium * 2) : normalHeader.height
         sortMenu.x = Math.max(0, pos.x + btn.width - sortMenu.width)
         sortMenu.visible = true
     }
@@ -214,7 +221,7 @@ Page {
         if (moreMenu.visible) {
             var btn = selectionMode ? moreHeaderButton2 : moreHeaderButton
             var pos = btn.mapToItem(mainPage, 0, 0)
-            moreMenu.y = selectionMode ? mainPage.height - bottomBar.height - (2 * Theme.itemSizeSmall + Theme.paddingMedium * 2) : normalHeader.height
+            moreMenu.y = selectionMode ? mainPage.height - bottomBar.height - (3 * Theme.itemSizeSmall + Theme.paddingMedium * 2) : normalHeader.height
             moreMenu.x = Math.max(0, pos.x + btn.width - moreMenu.width)
         }
     }
@@ -531,6 +538,8 @@ Page {
                 width: parent.width
                 height: Theme.itemSizeSmall
                 visible: selectionMode
+                enabled: mainPage.selectedIds.length > 0
+                opacity: enabled ? 1.0 : 0.4
                 onClicked: {
                     moreMenu.visible = false
                     if (mainPage.selectedIds.length === 0) return
@@ -559,6 +568,27 @@ Page {
                     anchors { left: parent.left; leftMargin: Theme.paddingLarge; verticalCenter: parent.verticalCenter }
                     text: qsTr("Изменение тегов")
                     color: mainPage.selectedIds.length > 0 ? (parent.down ? Theme.highlightColor : Theme.primaryColor) : Theme.secondaryColor
+                    font.pixelSize: Theme.fontSizeSmall
+                }
+            }
+
+            BackgroundItem {
+                width: parent.width
+                height: Theme.itemSizeSmall
+                visible: selectionMode
+                enabled: mainPage.selectedIds.length >= 2
+                opacity: enabled ? 1.0 : 0.4
+                onClicked: {
+                    moreMenu.visible = false
+                    if (mainPage.selectedIds.length < 2) return
+                    remorseDelete.execute(qsTr("Объединение заметок"), function() {
+                        mainPage.mergeSelected()
+                    })
+                }
+                Label {
+                    anchors { left: parent.left; leftMargin: Theme.paddingLarge; verticalCenter: parent.verticalCenter }
+                    text: qsTr("Объединить")
+                    color: mainPage.selectedIds.length >= 2 ? (parent.down ? Theme.highlightColor : Theme.primaryColor) : Theme.secondaryColor
                     font.pixelSize: Theme.fontSizeSmall
                 }
             }
@@ -1045,7 +1075,7 @@ Page {
             icon.source: "image://theme/icon-m-more"
             onClicked: {
                 var pos = moreHeaderButton2.mapToItem(mainPage, 0, 0)
-                moreMenu.y = mainPage.height - bottomBar.height - (2 * Theme.itemSizeSmall + Theme.paddingMedium * 2)
+                moreMenu.y = mainPage.height - bottomBar.height - (3 * Theme.itemSizeSmall + Theme.paddingMedium * 2)
                 moreMenu.x = Math.max(0, pos.x + moreHeaderButton2.width - moreMenu.width)
                 moreMenu.visible = !moreMenu.visible
             }
@@ -1137,7 +1167,7 @@ Page {
 
             function removeNote() {
                 remorse.execute(delegateItem, qsTr("Удаление заметки"), function() {
-                    Db.deleteNote(noteId)
+                    Db.deleteNote(model.noteId)
                     reloadNotes()
                 })
             }
@@ -1151,7 +1181,6 @@ Page {
                 }
                 width: Theme.iconSizeMedium
                 height: Theme.iconSizeMedium
-                z: -1
 
                 Rectangle {
                     anchors.fill: parent
@@ -1160,19 +1189,19 @@ Page {
                     color: "transparent"
                     border.color: Theme.secondaryColor
                     border.width: 3
-                    visible: mainPage.selectionMode && !isSelected(noteId)
+                    visible: mainPage.selectionMode && !isSelected(model.noteId)
                 }
 
                 Image {
                     anchors.fill: parent
                     source: "image://theme/icon-m-acknowledge"
-                    visible: mainPage.selectionMode && isSelected(noteId)
+                    visible: mainPage.selectionMode && isSelected(model.noteId)
                 }
 
                 MouseArea {
                     anchors.fill: parent
                     enabled: mainPage.selectionMode
-                    onClicked: mainPage.toggleSelection(noteId)
+                    onClicked: mainPage.toggleSelection(model.noteId)
                 }
             }
 
@@ -1212,7 +1241,7 @@ Page {
 
                 Label {
                     width: parent.width
-                    text: title
+                    text: model.title || ""
                     color: delegateItem.highlighted ? Theme.highlightColor : Theme.primaryColor
                     font.pixelSize: Theme.fontSizeMedium
                     truncationMode: TruncationMode.Fade
@@ -1220,32 +1249,32 @@ Page {
                 Item { width: 1; height: Theme.paddingSmall }
                 Row {
                     width: parent.width; spacing: Theme.paddingMedium
-                    Label { text: date; color: Theme.secondaryColor; font.pixelSize: Theme.fontSizeExtraSmall }
-                    Label { text: duration; color: Theme.secondaryColor; font.pixelSize: Theme.fontSizeExtraSmall }
-                    Label { text: fileSize; color: Theme.secondaryColor; font.pixelSize: Theme.fontSizeExtraSmall }
+                    Label { text: model.date || ""; color: Theme.secondaryColor; font.pixelSize: Theme.fontSizeExtraSmall }
+                    Label { text: model.duration || ""; color: Theme.secondaryColor; font.pixelSize: Theme.fontSizeExtraSmall }
+                    Label { text: model.fileSize || ""; color: Theme.secondaryColor; font.pixelSize: Theme.fontSizeExtraSmall }
                 }
                 Item { width: 1; height: Theme.paddingSmall }
                 Label {
-                    width: parent.width; text: preview
+                    width: parent.width; text: model.preview || ""
                     color: Theme.secondaryColor; font.pixelSize: Theme.fontSizeSmall
                     maximumLineCount: 2; truncationMode: TruncationMode.Elide; wrapMode: Text.WordWrap
-                    visible: preview.length > 0
+                    visible: model.preview && model.preview.length > 0
                 }
             }
 
             onClicked: {
                 if (mainPage.selectionMode) {
-                    mainPage.toggleSelection(noteId)
+                    mainPage.toggleSelection(model.noteId)
                 } else {
                     pageStack.push(Qt.resolvedUrl("NoteViewPage.qml"), {
-                        noteId: noteId, noteTitle: title, noteDate: date,
-                        noteText: text, noteDuration: duration, noteAudio: audio
+                        noteId: model.noteId, noteTitle: model.title || "", noteDate: model.date || "",
+                        noteText: model.text || "", noteDuration: model.duration || "", noteAudio: model.audio || ""
                     })
                 }
             }
 
             onPressAndHold: {
-                if (!mainPage.selectionMode) mainPage.enterSelectionMode(noteId)
+                if (!mainPage.selectionMode) mainPage.enterSelectionMode(model.noteId)
             }
 
             Rectangle {

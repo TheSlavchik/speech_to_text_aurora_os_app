@@ -503,3 +503,83 @@ int SpeechRecognizer::fileSize(const QString &path) const
     }
     return static_cast<int>(f.size());
 }
+
+// WAV file structure
+struct WavHeader {
+    char riff[4] = {'R', 'I', 'F', 'F'};
+    quint32 fileSize;
+    char wave[4] = {'W', 'A', 'V', 'E'};
+    char fmt[4] = {'f', 'm', 't', ' '};
+    quint32 fmtSize = 16;
+    quint16 audioFormat = 1;
+    quint16 numChannels = 1;
+    quint32 sampleRate = 16000;
+    quint32 byteRate = 32000;
+    quint16 blockAlign = 2;
+    quint16 bitsPerSample = 16;
+    char data[4] = {'d', 'a', 't', 'a'};
+    quint32 dataSize;
+};
+
+bool SpeechRecognizer::mergeAudioFiles(const QStringList &inputPaths, const QString &outputPath)
+{
+    if (inputPaths.isEmpty()) return false;
+
+    QByteArray mergedPcm;
+    quint32 sampleRate = 16000;
+
+    for (const QString &path : inputPaths) {
+        QString localPath = path;
+        if (localPath.startsWith(QLatin1String("file://"))) {
+            QUrl url(localPath);
+            localPath = url.toLocalFile();
+        }
+
+        QFile file(localPath);
+        if (!file.open(QIODevice::ReadOnly)) continue;
+
+        // Read WAV header
+        WavHeader header;
+        if (file.read(reinterpret_cast<char*>(&header), sizeof(WavHeader)) != sizeof(WavHeader)) {
+            file.close();
+            continue;
+        }
+
+        // Verify it's a valid WAV
+        if (qstrncmp(header.riff, "RIFF", 4) != 0 || qstrncmp(header.wave, "WAVE", 4) != 0) {
+            file.close();
+            continue;
+        }
+
+        sampleRate = header.sampleRate;
+
+        // Read PCM data
+        QByteArray pcm = file.read(header.dataSize);
+        mergedPcm.append(pcm);
+        file.close();
+    }
+
+    if (mergedPcm.isEmpty()) return false;
+
+    // Write merged WAV
+    QString localOutPath = outputPath;
+    if (localOutPath.startsWith(QLatin1String("file://"))) {
+        QUrl url(localOutPath);
+        localOutPath = url.toLocalFile();
+    }
+
+    QFile outFile(localOutPath);
+    if (!outFile.open(QIODevice::WriteOnly)) return false;
+
+    WavHeader outHeader;
+    outHeader.sampleRate = sampleRate;
+    outHeader.byteRate = sampleRate * 2;
+    outHeader.dataSize = mergedPcm.size();
+    outHeader.fileSize = sizeof(WavHeader) + mergedPcm.size() - 8;
+
+    outFile.write(reinterpret_cast<const char*>(&outHeader), sizeof(WavHeader));
+    outFile.write(mergedPcm);
+    outFile.close();
+
+    return true;
+}

@@ -13,25 +13,18 @@ Page {
 
     function formatTime(seconds) {
         var s = Math.floor(seconds)
-        var min = Math.floor(s / 60)
+        var h = Math.floor(s / 3600)
+        var m = Math.floor((s % 3600) / 60)
         var sec = s % 60
-        return (min < 10 ? "0" : "") + min + ":" + (sec < 10 ? "0" : "") + sec
+        return (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m + ":" + (sec < 10 ? "0" : "") + sec
     }
 
     Connections {
         target: SpeechRecognizer
 
         onFinished: {
-            var clean = text ? text.trim() : ""
-            // Note is saved centrally by ApplicationWindow
-            pageStack.replace(Qt.resolvedUrl("NoteViewPage.qml"), {
-                noteId: appWindow.lastNoteId,
-                noteTitle: qsTr("Запись от %1").arg(Qt.formatDateTime(new Date(), "dd.MM.yyyy hh:mm")),
-                noteDate: Qt.formatDateTime(new Date(), "dd.MM.yyyy hh:mm"),
-                noteText: clean,
-                noteDuration: formatTime(durationSec),
-                noteAudio: audioPath
-            })
+            // Note is saved centrally by ApplicationWindow, just go back
+            pageStack.pop()
         }
 
         onErrorOccurred: {

@@ -1,5 +1,6 @@
 .pragma library
 .import QtQuick.LocalStorage 2.0 as Sql
+.import ru.omstu.voicenotes 1.0 as VoiceNotes
 
 // Persistent storage for voice notes (SQLite via QtQuick.LocalStorage, Qt 5.6).
 
@@ -179,6 +180,86 @@ function deleteNotes(ids) {
     return count
 }
 
+function mergeNotes(ids) {
+    if (!ids || ids.length < 2) return -1
+    var db = getDatabase()
+    
+    // Get all selected notes sorted by creation date
+    var notes = []
+    db.readTransaction(function(tx) {
+        var placeholders = ids.map(function() { return "?" }).join(",")
+        var rs = tx.executeSql("SELECT * FROM notes WHERE id IN (" + placeholders + ") ORDER BY created ASC", ids)
+        for (var i = 0; i < rs.rows.length; i++) {
+            notes.push(rs.rows.item(i))
+        }
+    })
+    
+    if (notes.length < 2) return -1
+    
+    // Build merged content
+    var now = new Date()
+    var dateStr = Qt.formatDateTime(now, "dd.MM.yyyy hh:mm:ss")
+    var title = "Объединение от " + dateStr
+    
+    var texts = []
+    var allTags = {}
+    var audioPaths = []
+    
+    for (var n = 0; n < notes.length; n++) {
+        var note = notes[n]
+        if (note.text) texts.push(note.text)
+        if (note.tags) {
+            var tags = note.tags.split("|")
+            for (var t = 0; t < tags.length; t++) {
+                var tag = tags[t].trim()
+                if (tag.length > 0) allTags[tag] = true
+            }
+        }
+        if (note.audio) audioPaths.push(note.audio)
+    }
+    
+    var mergedText = texts.join("\n\n")
+    var mergedTags = Object.keys(allTags).join("|")
+    
+    // Merge audio files if available
+    var mergedAudio = ""
+    var mergedFileSize = 0
+    var mergedDuration = ""
+    if (audioPaths.length > 0) {
+        var dir = audioPaths[0].substring(0, audioPaths[0].lastIndexOf("/") + 1)
+        var ts = Qt.formatDateTime(now, "yyyyMMdd_hhmmss")
+        var mergedPath = dir + "note_" + ts + ".wav"
+        var ok = VoiceNotes.SpeechRecognizer.mergeAudioFiles(audioPaths, mergedPath)
+        if (ok) {
+            mergedAudio = mergedPath
+            mergedFileSize = VoiceNotes.SpeechRecognizer.fileSize(mergedPath)
+            // Calculate duration from merged file size
+            // WAV: 16kHz, mono, 16-bit = 32000 bytes/sec; header is 44 bytes
+            var pcmSize = mergedFileSize - 44
+            if (pcmSize > 0) {
+                var totalSec = Math.round(pcmSize / 32000)
+                var h = Math.floor(totalSec / 3600)
+                var m = Math.floor((totalSec % 3600) / 60)
+                var s = totalSec % 60
+                mergedDuration = (h < 10 ? "0" : "") + h + ":" +
+                                 (m < 10 ? "0" : "") + m + ":" +
+                                 (s < 10 ? "0" : "") + s
+            }
+        }
+    }
+    
+    // Create merged note
+    var newId = addNote(title, dateStr, mergedText, mergedDuration, mergedAudio, mergedFileSize)
+    if (newId >= 0 && mergedTags.length > 0) {
+        updateNoteTags(newId, mergedTags.split("|"))
+    }
+    
+    // Delete original notes
+    deleteNotes(ids)
+    
+    return newId
+}
+
 function updateNoteTitle(id, newTitle) {
     var db = getDatabase()
     var ok = false
@@ -284,7 +365,7 @@ function getNoteDetails(noteId, callback) {
                          (fileName.indexOf(".mp3") >= 0 ? "MP3" : "Аудио")
             result.created = row.date || ""
             var mod = row.modified || 0
-            result.modified = mod > 0 ? new Date(mod).toLocaleString() : ""
+            result.modified = mod > 0 ? Qt.formatDateTime(new Date(mod), "dd.MM.yyyy hh:mm:ss") : ""
             result.tags = (row.tags || "").replace(/\|/g, ", ")
         }
         if (callback) callback(result)

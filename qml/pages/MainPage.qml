@@ -13,9 +13,12 @@ Page {
     property bool isRecording: false
     property string sortField: "date"
     property string sortDir: "desc"
-    property var activeFilterTags: []
+    property var filterTagStates: ({})
+    property bool strictMatch: false
+    readonly property bool hasActiveFilters: searchField.text.length > 0 || Object.keys(filterTagStates).length > 0
     property var filterTagList: []
     property bool searchVisible: false
+    property bool filteringInProgress: true
 
     // --- Multi-selection state ---
     property bool selectionMode: false
@@ -102,20 +105,55 @@ Page {
     ListModel { id: filteredModel }
 
     function filterNotes(query) {
+        filteringInProgress = false
         filteredModel.clear()
         for (var j = 0; j < notesModel.count; j++) {
             var note = notesModel.get(j)
             // Tag filter
-            if (activeFilterTags.length > 0) {
+            var tagKeys = Object.keys(filterTagStates)
+            if (tagKeys.length > 0) {
                 var noteTags = (note.tags || "").split("|")
-                var found = false
-                for (var i = 0; i < activeFilterTags.length; i++) {
-                    if (noteTags.indexOf(activeFilterTags[i]) >= 0) {
-                        found = true
+
+                // Excludes: note MUST NOT have excluded tags
+                var excluded = false
+                for (var ti = 0; ti < tagKeys.length; ti++) {
+                    if (filterTagStates[tagKeys[ti]] === "exclude" && noteTags.indexOf(tagKeys[ti]) >= 0) {
+                        excluded = true
                         break
                     }
                 }
-                if (!found) continue
+                if (excluded) continue
+
+                // Includes
+                var includes = []
+                for (var ti2 = 0; ti2 < tagKeys.length; ti2++) {
+                    if (filterTagStates[tagKeys[ti2]] === "include") {
+                        includes.push(tagKeys[ti2])
+                    }
+                }
+                if (includes.length > 0) {
+                    if (strictMatch) {
+                        // AND: all includes must match
+                        var allMatch = true
+                        for (var ai = 0; ai < includes.length; ai++) {
+                            if (noteTags.indexOf(includes[ai]) < 0) {
+                                allMatch = false
+                                break
+                            }
+                        }
+                        if (!allMatch) continue
+                    } else {
+                        // OR: at least one include must match
+                        var anyMatch = false
+                        for (var oi = 0; oi < includes.length; oi++) {
+                            if (noteTags.indexOf(includes[oi]) >= 0) {
+                                anyMatch = true
+                                break
+                            }
+                        }
+                        if (!anyMatch) continue
+                    }
+                }
             }
             // Text search
             if (query !== "") {
@@ -127,18 +165,21 @@ Page {
             }
             filteredModel.append(note)
         }
+        filteringInProgress = false
     }
 
     function reloadNotes() {
+        filteringInProgress = true
         Db.loadNotes(notesModel, sortField, sortDir)
         filterTagList = Db.getAllTags()
-        // Remove filter tags that no longer exist
-        for (var i = activeFilterTags.length - 1; i >= 0; i--) {
-            if (filterTagList.indexOf(activeFilterTags[i]) < 0) {
-                activeFilterTags.splice(i, 1)
+        // Remove filter states that no longer exist
+        for (var tag in filterTagStates) {
+            if (filterTagList.indexOf(tag) < 0) {
+                delete filterTagStates[tag]
             }
         }
         filterNotes(searchField.text)
+        filteringInProgress = false
     }
 
     function openFilterMenu() {
@@ -290,45 +331,154 @@ Page {
                 width: parent.width
                 anchors.centerIn: parent
 
+                // Сброс + ИЛИ/И
                 BackgroundItem {
                     width: parent.width
                     height: Theme.itemSizeSmall
                     onClicked: {
-                        activeFilterTags = []
+                        filterTagStates = {}
                         filterNotes(searchField.text)
-                        filterTagMenu.visible = false
                     }
-                    Label {
-                        anchors { left: parent.left; leftMargin: Theme.paddingLarge; verticalCenter: parent.verticalCenter }
-                        text: qsTr("Все заметки")
-                        color: activeFilterTags.length === 0 ? Theme.highlightColor : Theme.primaryColor
-                        font.pixelSize: Theme.fontSizeSmall
+
+                    Row {
+                        anchors { fill: parent; leftMargin: Theme.paddingLarge; rightMargin: Theme.paddingLarge }
+                        spacing: Theme.paddingSmall
+
+                        Label {
+                            width: parent.width - strictRow.width - Theme.paddingSmall
+                            text: qsTr("Сброс")
+                            color: Object.keys(filterTagStates).length === 0 ? Theme.highlightColor : Theme.primaryColor
+                            font.pixelSize: Theme.fontSizeSmall
+                            anchors.verticalCenter: parent.verticalCenter
+                        }
+
+                        Row {
+                            id: strictRow
+                            spacing: 4
+                            anchors.verticalCenter: parent.verticalCenter
+
+                            Rectangle {
+                                width: Theme.itemSizeExtraSmall
+                                height: Theme.itemSizeExtraSmall
+                                radius: 4
+                                color: !strictMatch ? Theme.highlightColor : "transparent"
+                                border.color: strictMatch ? Theme.secondaryColor : "transparent"
+                                border.width: 1
+
+                                Label {
+                                    id: orLabel
+                                    anchors.centerIn: parent
+                                    text: qsTr("ИЛИ")
+                                    color: !strictMatch ? Theme.overlayBackgroundColor : Theme.secondaryColor
+                                    font.pixelSize: Theme.fontSizeExtraSmall
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: {
+                                        strictMatch = false
+                                        filterNotes(searchField.text)
+                                    }
+                                }
+                            }
+
+                            Rectangle {
+                                width: Theme.itemSizeExtraSmall
+                                height: Theme.itemSizeExtraSmall
+                                radius: 4
+                                color: strictMatch ? Theme.highlightColor : "transparent"
+                                border.color: !strictMatch ? Theme.secondaryColor : "transparent"
+                                border.width: 1
+
+                                Label {
+                                    id: andLabel
+                                    anchors.centerIn: parent
+                                    text: qsTr("И")
+                                    color: strictMatch ? Theme.overlayBackgroundColor : Theme.secondaryColor
+                                    font.pixelSize: Theme.fontSizeExtraSmall
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: {
+                                        strictMatch = true
+                                        filterNotes(searchField.text)
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 
+                // Tags with include/exclude indicators
                 Repeater {
                     model: filterTagList
                     BackgroundItem {
                         width: parent.width
                         height: Theme.itemSizeSmall
                         onClicked: {
-                            var idx = mainPage.activeFilterTags.indexOf(modelData)
-                            if (idx >= 0) {
-                                mainPage.activeFilterTags.splice(idx, 1)
+                            var state = mainPage.filterTagStates[modelData]
+                            if (state === "include") {
+                                mainPage.filterTagStates[modelData] = "exclude"
+                            } else if (state === "exclude") {
+                                delete mainPage.filterTagStates[modelData]
                             } else {
-                                mainPage.activeFilterTags.push(modelData)
+                                mainPage.filterTagStates[modelData] = "include"
                             }
-                            mainPage.activeFilterTagsChanged()
+                            mainPage.filterTagStatesChanged()
                             filterNotes(searchField.text)
                         }
-                        Label {
-                            width: parent.width - 2 * Theme.paddingLarge
-                            anchors.verticalCenter: parent.verticalCenter
-                            x: Theme.paddingLarge
-                            text: modelData
-                            color: mainPage.activeFilterTags.indexOf(modelData) >= 0 ? Theme.highlightColor : Theme.primaryColor
-                            font.pixelSize: Theme.fontSizeSmall
-                            elide: Text.ElideRight
+
+                        Row {
+                            anchors { fill: parent; leftMargin: Theme.paddingLarge; rightMargin: Theme.paddingLarge }
+                            spacing: Theme.paddingSmall
+
+                            Label {
+                                width: parent.width - indicatorBox.width - Theme.paddingSmall
+                                text: modelData
+                                color: mainPage.filterTagStates[modelData] ? Theme.highlightColor : Theme.primaryColor
+                                font.pixelSize: Theme.fontSizeSmall
+                                elide: Text.ElideRight
+                                anchors.verticalCenter: parent.verticalCenter
+                            }
+
+                            Rectangle {
+                                id: indicatorBox
+                                width: Theme.fontSizeExtraSmall + 4
+                                height: Theme.fontSizeExtraSmall + 4
+                                radius: 4
+                                color: mainPage.filterTagStates[modelData] === "include" ? "green" :
+                                       (mainPage.filterTagStates[modelData] === "exclude" ? "red" : "transparent")
+                                visible: mainPage.filterTagStates[modelData] !== undefined
+                                anchors.verticalCenter: parent.verticalCenter
+
+                                Item {
+                                    id: indicatorSymbol
+                                    anchors.centerIn: parent
+                                    width: Theme.paddingLarge
+                                    height: width
+
+                                    readonly property string currentStatus: mainPage.filterTagStates[modelData] || ""
+
+                                    // Horizontal line (for both + and -)
+                                    Rectangle {
+                                        anchors.centerIn: parent
+                                        width: parent.width * 0.5
+                                        height: 2
+                                        color: Theme.overlayBackgroundColor
+                                        visible: parent.currentStatus === "include" || parent.currentStatus === "exclude"
+                                    }
+
+                                    // Vertical line (only for +)
+                                    Rectangle {
+                                        anchors.centerIn: parent
+                                        width: 2
+                                        height: parent.height * 0.5
+                                        color: Theme.overlayBackgroundColor
+                                        visible: parent.currentStatus === "include"
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -590,7 +740,7 @@ Page {
             width: Theme.iconSizeMedium
             height: Theme.iconSizeMedium
             icon.source: "image://theme/icon-m-filter"
-            icon.color: activeFilterTags.length > 0 ? Theme.highlightColor : Theme.secondaryColor
+            icon.color: Object.keys(filterTagStates).length > 0 ? Theme.highlightColor : Theme.secondaryColor
             onClicked: mainPage.openFilterMenu()
         }
 
@@ -728,109 +878,116 @@ Page {
         }
     }
 
-    // --- ОСНОВНОЙ СПИСОК (БЕЗ ВНЕШНЕГО FLICKABLE) ---
-    SilicaListView {
-        id: notesListView
+    // --- ОСНОВНОЙ СПИСОК (С КОНТЕЙНЕРОМ ДЛЯ CLIP) ---
+    Item {
+        id: listContainer
         anchors {
             top: searchHeader.bottom
             left: parent.left
             right: parent.right
             bottom: bottomBar.visible ? bottomBar.top : parent.bottom
         }
-        // Блокируем любые клики и прокрутку списка, пока активен таймер удаления
-        enabled: !remorseDelete.active
-
-        boundsBehavior: Flickable.DragOverBounds
         clip: true
-        model: filteredModel
-        delegate: noteDelegate
-        spacing: 0
 
-        // Индикаторы загрузки и записи перенесены в заголовок списка
-        header: Column {
-            width: notesListView.width
+        SilicaListView {
+            id: notesListView
+            anchors.fill: parent
+            anchors.topMargin: -1
+            // Блокируем любые клики и прокрутку списка, пока активен таймер удаления
+            enabled: !remorseDelete.active
 
-            // Model loading indicator
-            Item {
-                width: parent.width
-                height: modelLoaded ? 0 : modelLoadingColumn.height + Theme.paddingMedium
-                visible: !modelLoaded
-                clip: true
-                Behavior on height { NumberAnimation { duration: 300 } }
-                Column {
-                    id: modelLoadingColumn
-                    width: parent.width - 2 * Theme.horizontalPageMargin
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    Item { width: 1; height: Theme.paddingSmall }
-                    Label {
-                        width: parent.width
-                        text: qsTr("Загрузка модели распознавания речи...")
-                        color: Theme.secondaryColor
-                        font.pixelSize: Theme.fontSizeSmall
-                        horizontalAlignment: Text.AlignHCenter
-                        wrapMode: Text.WordWrap
-                    }
-                    Item { width: 1; height: Theme.paddingSmall }
-                    ProgressBar {
-                        id: modelProgressBar
-                        width: parent.width
-                        indeterminate: true
-                        visible: !modelLoaded
+            boundsBehavior: Flickable.DragOverBounds
+            clip: true
+            model: filteredModel
+            delegate: noteDelegate
+            spacing: 0
+
+            // Индикаторы загрузки и записи перенесены в заголовок списка
+            header: Column {
+                width: notesListView.width
+
+                // Model loading indicator
+                Item {
+                    width: parent.width
+                    height: modelLoaded ? 0 : modelLoadingColumn.height + Theme.paddingMedium
+                    visible: !modelLoaded
+                    clip: true
+                    Behavior on height { NumberAnimation { duration: 300 } }
+                    Column {
+                        id: modelLoadingColumn
+                        width: parent.width - 2 * Theme.horizontalPageMargin
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        Item { width: 1; height: Theme.paddingSmall }
+                        Label {
+                            width: parent.width
+                            text: qsTr("Загрузка модели распознавания речи...")
+                            color: Theme.secondaryColor
+                            font.pixelSize: Theme.fontSizeSmall
+                            horizontalAlignment: Text.AlignHCenter
+                            wrapMode: Text.WordWrap
+                        }
+                        Item { width: 1; height: Theme.paddingSmall }
+                        ProgressBar {
+                            id: modelProgressBar
+                            width: parent.width
+                            indeterminate: true
+                            visible: !modelLoaded
+                        }
                     }
                 }
-            }
 
-            // Recording indicator bar
-            Item {
-                width: parent.width
-                height: isRecording ? recordingBar.height + Theme.paddingSmall : 0
-                visible: isRecording
-                clip: true
-                Behavior on height { NumberAnimation { duration: 200 } }
-                Rectangle {
-                    id: recordingBar
-                    width: parent.width; height: Theme.itemSizeSmall
-                    color: Theme.errorColor
-                    Row {
-                        anchors.centerIn: parent; spacing: Theme.paddingMedium
-                        Rectangle {
-                            id: recordingDot
-                            width: Theme.paddingSmall; height: Theme.paddingSmall
-                            radius: width / 2; color: "white"
-                            SequentialAnimation on opacity {
-                                loops: Animation.Infinite
-                                PropertyAnimation { to: 0.3; duration: 600 }
-                                PropertyAnimation { to: 1.0; duration: 600 }
+                // Recording indicator bar
+                Item {
+                    width: parent.width
+                    height: isRecording ? recordingBar.height + Theme.paddingSmall : 0
+                    visible: isRecording
+                    clip: true
+                    Behavior on height { NumberAnimation { duration: 200 } }
+                    Rectangle {
+                        id: recordingBar
+                        width: parent.width; height: Theme.itemSizeSmall
+                        color: Theme.errorColor
+                        Row {
+                            anchors.centerIn: parent; spacing: Theme.paddingMedium
+                            Rectangle {
+                                id: recordingDot
+                                width: Theme.paddingSmall; height: Theme.paddingSmall
+                                radius: width / 2; color: "white"
+                                SequentialAnimation on opacity {
+                                    loops: Animation.Infinite
+                                    PropertyAnimation { to: 0.3; duration: 600 }
+                                    PropertyAnimation { to: 1.0; duration: 600 }
+                                }
+                            }
+                            Label {
+                                text: qsTr("Идёт запись...")
+                                color: "white"
+                                font.pixelSize: Theme.fontSizeSmall
+                                anchors.verticalCenter: parent.verticalCenter
                             }
                         }
-                        Label {
-                            text: qsTr("Идёт запись...")
-                            color: "white"
-                            font.pixelSize: Theme.fontSizeSmall
-                            anchors.verticalCenter: parent.verticalCenter
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: pageStack.push(Qt.resolvedUrl("RecordingPage.qml"))
                         }
-                    }
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: pageStack.push(Qt.resolvedUrl("RecordingPage.qml"))
                     }
                 }
             }
-        }
 
-        // Футер-спейсер резервирует место под парящую кнопку микрофона
-        footer: Item {
-            width: parent.width
-            height: recordButton.height + Theme.paddingLarge * 2
-        }
+            // Футер-спейсер резервирует место под парящую кнопку микрофона
+            footer: Item {
+                width: parent.width
+                height: recordButton.height + Theme.paddingLarge * 2
+            }
 
-        ViewPlaceholder {
-            enabled: filteredModel.count === 0
-            text: searchField.text.length > 0 ? qsTr("Нет совпадений") : qsTr("Нет заметок")
-            hintText: searchField.text.length > 0 ? "" : qsTr("Нажмите на микрофон, чтобы начать запись")
-        }
+            ViewPlaceholder {
+                enabled: filteredModel.count === 0 && !filteringInProgress
+                text: notesModel.count > 0 ? qsTr("Нет совпадений") : qsTr("Нет заметок")
+                hintText: notesModel.count > 0 ? "" : qsTr("Нажмите на микрофон, чтобы начать запись")
+            }
 
-        VerticalScrollDecorator {}
+            VerticalScrollDecorator {}
+        }
     }
 
     // Bottom action bar (visible only in selection mode)
@@ -928,7 +1085,7 @@ Page {
             width: Theme.iconSizeMedium
             height: Theme.iconSizeMedium
             icon.source: "image://theme/icon-m-filter"
-            icon.color: activeFilterTags.length > 0 ? Theme.highlightColor : Theme.secondaryColor
+            icon.color: Object.keys(filterTagStates).length > 0 ? Theme.highlightColor : Theme.secondaryColor
             onClicked: mainPage.openFilterMenu()
         }
     }

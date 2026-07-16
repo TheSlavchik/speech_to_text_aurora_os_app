@@ -24,6 +24,10 @@ function getDatabase() {
         try {
             tx.executeSql("ALTER TABLE notes ADD COLUMN tags TEXT DEFAULT ''")
         } catch (e) { /* column already exists */ }
+        // Add modified column if upgrading from older schema
+        try {
+            tx.executeSql("ALTER TABLE notes ADD COLUMN modified INTEGER DEFAULT 0")
+        } catch (e) { /* column already exists */ }
         // Create tags table
         tx.executeSql("CREATE TABLE IF NOT EXISTS tags ("
                       + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -76,11 +80,14 @@ function loadNotes(model, sortMode, sortDir) {
     } else if (mode === "size") {
         order = "ORDER BY created DESC"
         sortInJS = true
+    } else if (mode === "modified") {
+        order = "ORDER BY created DESC"
+        sortInJS = true
     }
 
     var db = getDatabase()
     db.readTransaction(function(tx) {
-        var rs = tx.executeSql("SELECT id, title, date, text, duration, audio, file_size, tags "
+        var rs = tx.executeSql("SELECT id, title, date, text, duration, audio, file_size, tags, modified "
                                + "FROM notes " + order)
         var rows = []
         for (var i = 0; i < rs.rows.length; i++) {
@@ -96,6 +103,11 @@ function loadNotes(model, sortMode, sortDir) {
             } else if (mode === "size") {
                 rows.sort(function(a, b) {
                     var diff = (a.file_size || 0) - (b.file_size || 0)
+                    return dir === "asc" ? diff : -diff
+                })
+            } else if (mode === "modified") {
+                rows.sort(function(a, b) {
+                    var diff = (a.modified || 0) - (b.modified || 0)
                     return dir === "asc" ? diff : -diff
                 })
             }
@@ -171,7 +183,7 @@ function updateNoteTitle(id, newTitle) {
     var db = getDatabase()
     var ok = false
     db.transaction(function(tx) {
-        var r = tx.executeSql("UPDATE notes SET title = ? WHERE id = ?", [newTitle, id])
+        var r = tx.executeSql("UPDATE notes SET title = ?, modified = ? WHERE id = ?", [newTitle, Date.now(), id])
         ok = r.rowsAffected > 0
     })
     return ok
@@ -242,6 +254,40 @@ function updateNoteTags(noteId, tags) {
         for (var u = 0; u < uniqueTags.length; u++) {
             tx.executeSql("INSERT OR IGNORE INTO tags (name, created) VALUES (?, ?)", [uniqueTags[u], Date.now()])
         }
+    })
+}
+
+function updateNoteText(noteId, newText) {
+    var db = getDatabase()
+    var ok = false
+    db.transaction(function(tx) {
+        var r = tx.executeSql("UPDATE notes SET text = ?, modified = ? WHERE id = ?", [newText, Date.now(), noteId])
+        ok = r.rowsAffected > 0
+    })
+    return ok
+}
+
+function getNoteDetails(noteId, callback) {
+    var db = getDatabase()
+    db.transaction(function(tx) {
+        var result = {}
+        var rs = tx.executeSql("SELECT * FROM notes WHERE id = ?", [noteId])
+        if (rs.rows.length > 0) {
+            var row = rs.rows.item(0)
+            var audioPath = row.audio || ""
+            var fileName = audioPath.split("/").pop() || ""
+            result.fileName = fileName
+            result.filePath = audioPath
+            result.fileSize = formatFileSize(row.file_size || 0)
+            result.duration = row.duration || ""
+            result.type = fileName.indexOf(".wav") >= 0 ? "WAV" :
+                         (fileName.indexOf(".mp3") >= 0 ? "MP3" : "Аудио")
+            result.created = row.date || ""
+            var mod = row.modified || 0
+            result.modified = mod > 0 ? new Date(mod).toLocaleString() : ""
+            result.tags = (row.tags || "").replace(/\|/g, ", ")
+        }
+        if (callback) callback(result)
     })
 }
 

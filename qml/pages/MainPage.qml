@@ -600,7 +600,7 @@ Page {
                     spacing: Theme.paddingSmall
                     Label {
                         width: parent.width - arrowLabel.width - Theme.paddingSmall
-                        text: qsTr("По дате")
+                        text: qsTr("По дате создания")
                         color: sortField === "date" ? Theme.highlightColor : Theme.primaryColor
                         font.pixelSize: Theme.fontSizeSmall
                         truncationMode: TruncationMode.Fade
@@ -691,6 +691,32 @@ Page {
                         font.pixelSize: Theme.fontSizeSmall
                         anchors.verticalCenter: parent.verticalCenter
                         visible: sortField === "size"
+                    }
+                }
+            }
+
+            BackgroundItem {
+                width: parent.width
+                height: Theme.itemSizeSmall
+                onClicked: applySort("modified")
+                Row {
+                    anchors { fill: parent; leftMargin: Theme.paddingLarge; rightMargin: Theme.paddingLarge }
+                    spacing: Theme.paddingSmall
+                    Label {
+                        width: parent.width - arrowLabel5.width - Theme.paddingSmall
+                        text: qsTr("По дате изменения")
+                        color: sortField === "modified" ? Theme.highlightColor : Theme.primaryColor
+                        font.pixelSize: Theme.fontSizeSmall
+                        truncationMode: TruncationMode.Fade
+                        anchors.verticalCenter: parent.verticalCenter
+                    }
+                    Label {
+                        id: arrowLabel5
+                        text: sortField === "modified" ? (sortDir === "asc" ? "▲" : "▼") : ""
+                        color: Theme.secondaryColor
+                        font.pixelSize: Theme.fontSizeSmall
+                        anchors.verticalCenter: parent.verticalCenter
+                        visible: sortField === "modified"
                     }
                 }
             }
@@ -1125,6 +1151,7 @@ Page {
                 }
                 width: Theme.iconSizeMedium
                 height: Theme.iconSizeMedium
+                z: -1
 
                 Rectangle {
                     anchors.fill: parent
@@ -1144,11 +1171,8 @@ Page {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: {
-                        if (mainPage.selectionMode) {
-                            mainPage.toggleSelection(noteId)
-                        }
-                    }
+                    enabled: mainPage.selectionMode
+                    onClicked: mainPage.toggleSelection(noteId)
                 }
             }
 

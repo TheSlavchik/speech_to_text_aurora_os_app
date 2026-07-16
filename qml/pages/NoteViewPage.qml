@@ -74,7 +74,7 @@ Page {
         onClicked: dropdownMenu.visible = false
     }
 
-    // --- Фиксированная верхняя панель вместо старого PageHeader ---
+    // --- Фиксированная верхняя панель ---
     Item {
         id: topBar
         width: parent.width
@@ -94,17 +94,18 @@ Page {
         }
     }
 
-    // --- Кастомное выпадающее меню на три точки ---
+    // --- Кастомное выпадающее меню ---
     Rectangle {
         id: dropdownMenu
         visible: false
         z: 101
         width: Theme.itemSizeLarge * 3.5
-        height: menuColumn.height + Theme.paddingMedium * 2
-        color: Theme.overlayBackgroundColor // Специальный цвет темы для перекрывающих меню
+        height: Math.min(menuColumn.height + Theme.paddingMedium * 2, 5 * Theme.itemSizeSmall + Theme.paddingMedium * 2)
+        color: Theme.overlayBackgroundColor
         radius: 12
-        border.color: Theme.rgba(Theme.secondaryColor, 0.3) // Рамка по всему периметру
+        border.color: Theme.rgba(Theme.secondaryColor, 0.3)
         border.width: 1
+        clip: true
 
         anchors {
             top: topBar.bottom
@@ -112,10 +113,14 @@ Page {
             rightMargin: Theme.horizontalPageMargin
         }
 
-        Column {
-            id: menuColumn
-            width: parent.width
-            anchors.centerIn: parent
+        SilicaFlickable {
+            anchors.fill: parent
+            contentHeight: menuColumn.height + Theme.paddingMedium * 2
+
+            Column {
+                id: menuColumn
+                width: parent.width
+                anchors.centerIn: parent
 
             BackgroundItem {
                 width: parent.width
@@ -149,7 +154,75 @@ Page {
                         leftMargin: Theme.paddingLarge
                         verticalCenter: parent.verticalCenter
                     }
-                    text: qsTr("Экспортировать в файл")
+                    text: qsTr("Экспорт в файл")
+                    color: parent.down ? Theme.highlightColor : Theme.primaryColor
+                    font.pixelSize: Theme.fontSizeSmall
+                }
+            }
+
+            BackgroundItem {
+                width: parent.width
+                height: Theme.itemSizeSmall
+                onClicked: {
+                    dropdownMenu.visible = false
+                    renameDialog.open()
+                }
+                Label {
+                    anchors {
+                        left: parent.left
+                        leftMargin: Theme.paddingLarge
+                        verticalCenter: parent.verticalCenter
+                    }
+                    text: qsTr("Переименовать")
+                    color: parent.down ? Theme.highlightColor : Theme.primaryColor
+                    font.pixelSize: Theme.fontSizeSmall
+                }
+            }
+
+            BackgroundItem {
+                width: parent.width
+                height: Theme.itemSizeSmall
+                onClicked: {
+                    dropdownMenu.visible = false
+                    editTextDialog.textArea.text = noteText
+                    editTextDialog.open()
+                }
+                Label {
+                    anchors {
+                        left: parent.left
+                        leftMargin: Theme.paddingLarge
+                        verticalCenter: parent.verticalCenter
+                    }
+                    text: qsTr("Редактировать")
+                    color: parent.down ? Theme.highlightColor : Theme.primaryColor
+                    font.pixelSize: Theme.fontSizeSmall
+                }
+            }
+
+            BackgroundItem {
+                width: parent.width
+                height: Theme.itemSizeSmall
+                onClicked: {
+                    dropdownMenu.visible = false
+                    Db.getNoteDetails(noteId, function(details) {
+                        detailsDialog.fileName = details.fileName || ""
+                        detailsDialog.filePath = details.filePath || ""
+                        detailsDialog.fileSize = details.fileSize || ""
+                        detailsDialog.fileDuration = details.duration || ""
+                        detailsDialog.fileType = details.type || ""
+                        detailsDialog.created = details.created || ""
+                        detailsDialog.modified = details.modified || ""
+                        detailsDialog.fileTags = details.tags || ""
+                        detailsDialog.open()
+                    })
+                }
+                Label {
+                    anchors {
+                        left: parent.left
+                        leftMargin: Theme.paddingLarge
+                        verticalCenter: parent.verticalCenter
+                    }
+                    text: qsTr("Подробности")
                     color: parent.down ? Theme.highlightColor : Theme.primaryColor
                     font.pixelSize: Theme.fontSizeSmall
                 }
@@ -173,10 +246,126 @@ Page {
                         leftMargin: Theme.paddingLarge
                         verticalCenter: parent.verticalCenter
                     }
-                    text: qsTr("Удалить заметку")
+                    text: qsTr("Удалить")
                     color: parent.down ? Theme.highlightColor : Theme.primaryColor
                     font.pixelSize: Theme.fontSizeSmall
                 }
+            }
+        }
+        }
+    }
+
+    // --- Диалог переименования ---
+    Dialog {
+        id: renameDialog
+        property alias nameField: nameField
+        allowedOrientations: Orientation.All
+        Column {
+            width: parent.width
+            spacing: Theme.paddingMedium
+
+            // Кастомный заголовок с иконками
+            Item {
+                width: parent.width
+                height: Theme.itemSizeMedium
+
+                IconButton {
+                    id: cancelRenameButton
+                    anchors { left: parent.left; leftMargin: Theme.paddingMedium; verticalCenter: parent.verticalCenter }
+                    icon.source: "image://theme/icon-m-close"
+                    onClicked: renameDialog.reject()
+                }
+
+                Label {
+                    anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                    text: qsTr("Переименовать")
+                    color: Theme.primaryColor
+                    font.pixelSize: Theme.fontSizeMedium
+                }
+
+                IconButton {
+                    id: confirmRenameButton
+                    anchors { right: parent.right; rightMargin: Theme.paddingMedium; verticalCenter: parent.verticalCenter }
+                    icon.source: "image://theme/icon-m-acknowledge"
+                    enabled: nameField.text.trim().length > 0
+                    onClicked: {
+                        if (nameField.text.trim().length > 0 && noteId >= 0) {
+                            Db.updateNoteTitle(noteId, nameField.text.trim())
+                            noteTitle = nameField.text.trim()
+                            renameDialog.accept()
+                        }
+                    }
+                }
+            }
+
+            TextField {
+                id: nameField
+                width: parent.width
+                placeholderText: qsTr("Название заметки")
+                text: noteTitle
+            }
+        }
+        onAccepted: {
+            if (nameField.text.trim().length > 0 && noteId >= 0) {
+                Db.updateNoteTitle(noteId, nameField.text.trim())
+                noteTitle = nameField.text.trim()
+            }
+        }
+    }
+
+    // --- Диалог редактирования текста ---
+    Dialog {
+        id: editTextDialog
+        property alias textArea: textArea
+        allowedOrientations: Orientation.All
+        Column {
+            width: parent.width
+            spacing: Theme.paddingMedium
+
+            // Кастомный заголовок с иконками
+            Item {
+                width: parent.width
+                height: Theme.itemSizeMedium
+
+                IconButton {
+                    id: cancelEditButton
+                    anchors { left: parent.left; leftMargin: Theme.paddingMedium; verticalCenter: parent.verticalCenter }
+                    icon.source: "image://theme/icon-m-close"
+                    onClicked: editTextDialog.reject()
+                }
+
+                Label {
+                    anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter }
+                    text: qsTr("Редактировать")
+                    color: Theme.primaryColor
+                    font.pixelSize: Theme.fontSizeMedium
+                }
+
+                IconButton {
+                    id: saveEditButton
+                    anchors { right: parent.right; rightMargin: Theme.paddingMedium; verticalCenter: parent.verticalCenter }
+                    icon.source: "image://theme/icon-m-acknowledge"
+                    onClicked: {
+                        if (noteId >= 0) {
+                            Db.updateNoteText(noteId, textArea.text)
+                            noteText = textArea.text
+                            editTextDialog.accept()
+                        }
+                    }
+                }
+            }
+
+            TextArea {
+                id: textArea
+                width: parent.width
+                height: pageStack.currentPage.height * 0.6
+                text: noteText
+            }
+        }
+        onAccepted: {
+            if (noteId >= 0) {
+                Db.updateNoteText(noteId, textArea.text)
+                noteText = textArea.text
             }
         }
     }
@@ -337,6 +526,121 @@ Page {
         }
 
         VerticalScrollDecorator {}
+    }
+
+    // --- Диалог подробностей ---
+    Dialog {
+        id: detailsDialog
+        allowedOrientations: Orientation.All
+
+        property string fileName: ""
+        property string filePath: ""
+        property string fileSize: ""
+        property string fileDuration: ""
+        property string fileType: ""
+        property string created: ""
+        property string modified: ""
+        property string fileTags: ""
+
+        Column {
+            width: parent.width
+            spacing: Theme.paddingMedium
+
+            Item {
+                width: parent.width
+                height: Theme.itemSizeMedium
+
+                Label {
+                    anchors.centerIn: parent
+                    text: qsTr("Подробности")
+                    color: Theme.primaryColor
+                    font.pixelSize: Theme.fontSizeMedium
+                }
+            }
+
+            Item { width: 1; height: Theme.paddingSmall }
+
+            Column {
+                x: Theme.horizontalPageMargin
+                width: parent.width - 2 * Theme.horizontalPageMargin
+                spacing: Theme.paddingMedium
+
+                Item {
+                    width: parent.width; height: detailColumn.height
+                    Column {
+                        id: detailColumn
+                        width: parent.width; spacing: 2
+                        Label { text: qsTr("Имя файла"); color: Theme.secondaryColor; font.pixelSize: Theme.fontSizeSmall }
+                        Label { text: detailsDialog.fileName; color: Theme.primaryColor; font.pixelSize: Theme.fontSizeSmall; wrapMode: Text.WordWrap }
+                    }
+                }
+                Item {
+                    width: parent.width; height: detailColumn2.height
+                    Column {
+                        id: detailColumn2
+                        width: parent.width; spacing: 2
+                        Label { text: qsTr("Путь"); color: Theme.secondaryColor; font.pixelSize: Theme.fontSizeSmall }
+                        Label { text: detailsDialog.filePath; color: Theme.primaryColor; font.pixelSize: Theme.fontSizeSmall; wrapMode: Text.WordWrap }
+                    }
+                }
+                Item {
+                    width: parent.width; height: detailColumn3.height
+                    Column {
+                        id: detailColumn3
+                        width: parent.width; spacing: 2
+                        Label { text: qsTr("Размер"); color: Theme.secondaryColor; font.pixelSize: Theme.fontSizeSmall }
+                        Label { text: detailsDialog.fileSize; color: Theme.primaryColor; font.pixelSize: Theme.fontSizeSmall }
+                    }
+                }
+                Item {
+                    width: parent.width; height: detailColumn4.height
+                    Column {
+                        id: detailColumn4
+                        width: parent.width; spacing: 2
+                        Label { text: qsTr("Продолжительность"); color: Theme.secondaryColor; font.pixelSize: Theme.fontSizeSmall }
+                        Label { text: detailsDialog.fileDuration; color: Theme.primaryColor; font.pixelSize: Theme.fontSizeSmall }
+                    }
+                }
+                Item {
+                    width: parent.width; height: detailColumn5.height
+                    Column {
+                        id: detailColumn5
+                        width: parent.width; spacing: 2
+                        Label { text: qsTr("Тип"); color: Theme.secondaryColor; font.pixelSize: Theme.fontSizeSmall }
+                        Label { text: detailsDialog.fileType; color: Theme.primaryColor; font.pixelSize: Theme.fontSizeSmall }
+                    }
+                }
+                Item {
+                    width: parent.width; height: detailColumn8.height
+                    visible: detailsDialog.fileTags !== ""
+                    Column {
+                        id: detailColumn8
+                        width: parent.width; spacing: 2
+                        Label { text: qsTr("Теги"); color: Theme.secondaryColor; font.pixelSize: Theme.fontSizeSmall }
+                        Label { text: detailsDialog.fileTags; color: Theme.primaryColor; font.pixelSize: Theme.fontSizeSmall; wrapMode: Text.WordWrap }
+                    }
+                }
+                Item {
+                    width: parent.width; height: detailColumn6.height
+                    Column {
+                        id: detailColumn6
+                        width: parent.width; spacing: 2
+                        Label { text: qsTr("Создание записи"); color: Theme.secondaryColor; font.pixelSize: Theme.fontSizeSmall }
+                        Label { text: detailsDialog.created; color: Theme.primaryColor; font.pixelSize: Theme.fontSizeSmall }
+                    }
+                }
+                Item {
+                    width: parent.width; height: detailColumn7.height
+                    visible: detailsDialog.modified !== ""
+                    Column {
+                        id: detailColumn7
+                        width: parent.width; spacing: 2
+                        Label { text: qsTr("Изменение заметки"); color: Theme.secondaryColor; font.pixelSize: Theme.fontSizeSmall }
+                        Label { text: detailsDialog.modified; color: Theme.primaryColor; font.pixelSize: Theme.fontSizeSmall }
+                    }
+                }
+            }
+        }
     }
 
     Component.onDestruction: audioPlayer.stop()
